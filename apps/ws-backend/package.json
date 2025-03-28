@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.8",
-    "@repo/db": "workspace:*",
+    "@repo/db": "workpnpmspace:*",
     "jsonwebtoken": "^9.0.2",
     "ws": "^8.18.0"
   },
