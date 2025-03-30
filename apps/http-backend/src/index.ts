@@ -32,15 +32,20 @@ app.post("/signup", async (req, res) => {
   const hashedPassWord = bcrypt.hashSync(parsedData.data.password, saltRounds);
   try {
     console.log(parsedData);
+    const data = {
+      email: parsedData.data?.username,
+      password: hashedPassWord,
+      name: parsedData.data.name,
+    };
     const user = await prismaClient.user.create({
-      data: {
-        email: parsedData.data?.username,
-        password: hashedPassWord,
-        name: parsedData.data.name,
-      },
+      data,
     });
+    const { password, ...dataFinal } = data;
     res.json({
-      userId: user.id,
+      data: {
+        userId: user.id,
+        dataFinal,
+      },
     });
   } catch (e) {
     res.status(500).json({
@@ -73,7 +78,10 @@ app.post("/signin", async (req, res) => {
     }
     const token = jwt.sign({ userId: user?.id }, JWT_SECRET);
     res.json({
-      JWT: token,
+      data: {
+        token,
+        user,
+      },
     });
   } catch (e) {
     res.status(500).json({

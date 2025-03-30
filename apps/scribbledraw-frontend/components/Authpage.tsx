@@ -1,16 +1,32 @@
 "use client";
 import React, { useState } from "react";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+import Link from "next/link";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { BACKEND_URL } from "@repo/common/server";
 
 export function AuthPage({ isSignin }: { isSignin: boolean }) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle authentication logic here
-    console.log({ email, password });
+    const response = await axios.post(
+      `${BACKEND_URL}/api/${isSignin ? "signin" : "signup"}`,
+      isSignin
+        ? { username: email, password }
+        : { name, username: email, password }
+    );
+    const data = response.data;
+    if (data) {
+      router.push("/room");
+    }
+
+    console.log({ name, email, password });
   };
 
   return (
@@ -35,6 +51,17 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              required
+            />
+          </div>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="name"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
               required
             />
@@ -86,22 +113,22 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
           {isSignin ? (
             <p>
               Don't have an account?{" "}
-              <a
-                href="#"
+              <Link
+                href="/signup"
                 className="text-purple-400 hover:text-purple-300 transition-colors"
               >
                 Sign up
-              </a>
+              </Link>
             </p>
           ) : (
             <p>
               Already have an account?{" "}
-              <a
-                href="#"
+              <Link
+                href="/signin"
                 className="text-purple-400 hover:text-purple-300 transition-colors"
               >
                 Sign in
-              </a>
+              </Link>
             </p>
           )}
         </div>
