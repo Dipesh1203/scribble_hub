@@ -5,6 +5,7 @@ import Link from "next/link";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { BACKEND_URL } from "@repo/common/server";
+import { signIn } from "next-auth/react";
 
 export function AuthPage({ isSignin }: { isSignin: boolean }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,18 +16,42 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const response = await axios.post(
-      `${BACKEND_URL}/api/${isSignin ? "signin" : "signup"}`,
-      isSignin
-        ? { username: email, password }
-        : { name, username: email, password }
-    );
-    const data = response.data;
-    if (data) {
-      router.push("/room");
+    try {
+      console.log("====");
+      if (isSignin) {
+        const res = await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        });
+        console.log(res);
+        if (res?.error) {
+          // setError("Authentication failed");
+          console.log("res.error");
+          console.log(res.error);
+        } else {
+          // Handle successful login, redirect user or show message
+          console.log("Sucess");
+          console.log("room");
+          router.push("/room");
+        }
+      } else {
+        const response = await axios.post(`${BACKEND_URL}/api/signup`, {
+          name,
+          username: email,
+          password,
+        });
+        console.log("response ", response);
+        const data = response?.data;
+        console.log("data ", data);
+        if (data) {
+          router.push("/signin");
+        }
+        console.log({ name, email, password });
+      }
+    } catch (error) {
+      console.error("Error:", error);
     }
-
-    console.log({ name, email, password });
   };
 
   return (
@@ -55,17 +80,19 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
               required
             />
           </div>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input
-              type="name"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-              required
-            />
-          </div>
+          {!isSignin && (
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="name"
+                placeholder="Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                required
+              />
+            </div>
+          )}
 
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />

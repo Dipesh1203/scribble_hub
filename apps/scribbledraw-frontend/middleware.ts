@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
   //     return NextResponse.redirect(new URL("/", request.url));
   //   }
   if (!token && pathname.startsWith("/room")) {
-    return NextResponse.redirect(new URL("/signup", request.url));
+    return NextResponse.redirect(new URL("/signin", request.url));
   }
 
   // If none of the conditions match, continue as normal

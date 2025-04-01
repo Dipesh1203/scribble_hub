@@ -19,6 +19,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@repo/common": "workspace:*",
+    "@repo/backend-common": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.0.17",
     "@types/node": "^22.13.14",
