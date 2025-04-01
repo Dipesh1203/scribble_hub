@@ -12,6 +12,7 @@ export default function Page() {
       ) : (
         <p>No user logged in</p>
       )}
+      {session && session?.token}
     </div>
   );
 }

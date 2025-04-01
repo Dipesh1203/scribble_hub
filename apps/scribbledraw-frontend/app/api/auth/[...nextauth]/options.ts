@@ -71,10 +71,13 @@ export const authOptions: NextAuthOptions = {
       console.log(user);
       console.log("jwt jwt");
       if (user) {
+        // @ts-ignore
+        token.jwt = user?.data?.token;
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
       }
+      console.log(" token ", token);
       return token;
     },
     async session({ session, token }: { session: any; token: any }) {
@@ -83,7 +86,7 @@ export const authOptions: NextAuthOptions = {
       console.log(session);
       console.log("jwt jwt");
       if (token) {
-        session.token = token.jti;
+        session.token = token.jwt;
         session.iat = token.iat;
         session.exp = token.exp;
       }
