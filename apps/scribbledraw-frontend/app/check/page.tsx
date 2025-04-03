@@ -1,10 +1,11 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { Session } from "../api/auth/[...nextauth]/options";
 
 export default function Page() {
-  const { data: session, status } = useSession();
-
+  const { data, status } = useSession();
+  const session = data as Session;
   return (
     <div>
       {session ? (

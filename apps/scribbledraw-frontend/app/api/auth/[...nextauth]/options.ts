@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth";
+import { DefaultSession, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import {
   CreateUserSchema,
@@ -12,6 +12,21 @@ interface userType {
   id: string;
   name: string;
   email: string;
+}
+export interface Session extends DefaultSession {
+  user: {
+    id: string;
+  } & DefaultSession["user"];
+  token?: string;
+  iat?: number;
+  exp?: number;
+}
+
+interface JWT {
+  id: string;
+  jwt?: string;
+  iat?: number;
+  exp?: number;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -36,7 +51,7 @@ export const authOptions: NextAuthOptions = {
           });
           const user = await res.json();
 
-          if (!res.ok || !user) {
+          if (!res.ok || !user?.data?.token) {
             return null;
             // throw new Error("No user found Authentication failed");
           }
@@ -81,10 +96,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }: { session: any; token: any }) {
-      console.log("jwt jwt 2");
-      console.log(token);
-      console.log(session);
-      console.log("jwt jwt");
       if (token) {
         session.token = token.jwt;
         session.iat = token.iat;

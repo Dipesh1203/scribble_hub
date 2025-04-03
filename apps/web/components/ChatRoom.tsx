@@ -10,6 +10,7 @@ async function getChats(roomId: string) {
 
 const ChatRoom = async ({ id }: { id: string }) => {
   const messages = await getChats(id);
+  console.log("chats");
   return <ChatRoomClient id={id} messages={messages} />;
 };
 

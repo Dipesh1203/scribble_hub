@@ -6,6 +6,7 @@ export { default } from "next-auth/middleware";
 // Middleware to handle authentication and route redirection
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
+  console.log("middleware token", token);
   const { pathname } = request.nextUrl;
 
   // Redirect authenticated users away from login/signup pages
@@ -13,10 +14,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/room", request.url));
   }
 
-  // Redirect unauthenticated users away from protected routes like dashboard
-  //   if (!token && pathname.startsWith("/dashboard")) {
-  //     return NextResponse.redirect(new URL("/", request.url));
-  //   }
   if (!token && pathname.startsWith("/room")) {
     return NextResponse.redirect(new URL("/signin", request.url));
   }
