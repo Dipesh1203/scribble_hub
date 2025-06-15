@@ -21,6 +21,8 @@ import FloatingButton from "@/components/ProfileDropdown";
 import { on } from "events";
 import ProfileDropdown from "@/components/ProfileDropdown";
 // import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { Rectangle } from "@/components/konva-shapes/Rectangle";
+import { CircleShape } from "@/components/konva-shapes/CircleShape";
 
 const ACTIONS = {
   SELECT: "SELECT",
@@ -59,7 +61,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
     width: typeof window !== "undefined" ? window.innerWidth : 800,
     height: typeof window !== "undefined" ? window.innerHeight : 600,
   });
-  const fill = "rgb(0,0,0,0)";
+  const fill = "rgb(0,10,0,10)";
 
   const floatingButtons = [
     {
@@ -208,6 +210,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       setRectangles((rects) => [
         ...rects,
         {
+          type: "rectangle",
           id,
           x: pointer.x,
           y: pointer.y,
@@ -222,6 +225,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       setCircles((circle) => [
         ...circle,
         {
+          type: "circle",
           id,
           x: pointer.x,
           y: pointer.y,
@@ -240,11 +244,13 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   }, [socket]);
 
   useEffect(() => {
+    console.log("ref change");
     setShapes([...rectangles, ...circles]);
   }, [rectangles, circles]);
 
   const getExistingShapes = async (roomId: string) => {
     const res = await axios.get(`${BACKEND_URL}/api/chats/${roomId}`);
+    console.log("getExistingShapes", res);
     const data = res.data.messages;
     console.log("response", res);
 
@@ -257,10 +263,10 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
           const shape = x.message.shape || x.message;
           if (typeof shape === "object") {
             if (shape.radius) {
-              newCircles.push(shape);
+              newCircles.push({ ...shape, chatId: x?.id });
             }
             if (shape.width && shape.height) {
-              newRectangles.push(shape);
+              newRectangles.push({ ...shape, chatId: x?.id });
             }
           }
           return shape;
@@ -288,7 +294,20 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
     );
   };
 
+  const updateShape = (socket: WebSocket, shape: any, roomId: string) => {
+    console.log("update hit", shape);
+    socket.send(
+      JSON.stringify({
+        type: "update-roomchat",
+        id: shape.chatId || shape.id,
+        roomId,
+        message: { shape },
+      })
+    );
+  };
+
   const handleStageMouseMove = (e: any) => {
+    console.log("mouse move");
     if (!isPainting.current) return;
     const stage = stageRef.current;
     const pointer = stage.getPointerPosition();
@@ -317,12 +336,13 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   };
 
   const handleStageMouseUp = () => {
+    console.log("mouse up");
     const tempId = currentShapeId.current;
     let updatedShape =
       rectangles.find((x) => x.id === tempId) ||
       circles.find((x) => x.id === tempId);
-
-    if (socket && updatedShape) {
+    console.log("updatedShape ", updatedShape);
+    if (socket && updatedShape && !updatedShape.chatId) {
       send(socket, updatedShape, roomId);
     }
     isPainting.current = false;
@@ -411,41 +431,87 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
         width={size.width}
         height={size.height - 64}
         onMouseDown={handleStageMouseDown}
+        // style={{  }}
         onMouseMove={handleStageMouseMove}
         onMouseUp={handleStageMouseUp}
-        style={{ background: "#fff" }}
+        style={{ background: "#fff", pointerEvents: "auto", zIndex: 1 }}
       >
         <Layer>
           {rectangles.map(
             (rect) =>
               rect && (
-                <Rect
-                  key={`rect-${rect.id + uuid()}`}
-                  x={rect.x}
-                  y={rect.y}
-                  width={rect.width}
-                  height={rect.height}
-                  fill={rect.fill}
-                  stroke={rect.stroke}
-                  strokeWidth={2}
-                  draggable={isDraggable}
-                  onClick={(e) => handleRectClick(e, rect.id)}
+                // <Rect
+                //   key={`rect-${rect.id + uuid()}`}
+                //   x={rect.x}
+                //   y={rect.y}
+                //   width={rect.width}
+                //   height={rect.height}
+                //   fill={rect.fill}
+                //   stroke={rect.stroke}
+                //   strokeWidth={2}
+                //   draggable={isDraggable}
+                //   onClick={(e) => handleRectClick(e, rect.id)}
+                // />
+                <Rectangle
+                  key={rect.id + uuid()}
+                  shapeProps={rect}
+                  isSelected={rect.id === selected}
+                  onSelect={() => {
+                    setSelected(rect.id);
+                  }}
+                  onChange={(newAttrs: any) => {
+                    console.log("newAttrs", newAttrs);
+                    const rects = rectangles.slice();
+                    console.log("rects", rects);
+                    // const i = rects.findIndex((r) => r.id === newAttrs.id);
+                    // console.log("i", i);
+                    // rects[i] = newAttrs;
+                    // console.log("rectangle after", rects[i]);
+                    updateShape(socket, newAttrs, roomId);
+                    // setRectangles(rects);
+                    const updatedRects = rectangles.map((r) =>
+                      r.id === newAttrs.id ? { ...r, ...newAttrs } : r
+                    );
+                    setRectangles(updatedRects);
+                  }}
                 />
               )
           )}
           {circles.map(
             (circle) =>
               circle && (
-                <Circle
-                  key={`circle-${circle.id + uuid()}`}
-                  x={circle.x}
-                  y={circle.y}
-                  radius={circle.radius}
-                  fill={"green"}
-                  stroke={circle.stroke}
-                  strokeWidth={2}
-                  draggable={isDraggable}
-                  onClick={(e) => handleCircClick(e, circle.id)}
+                // <Circle
+                //   key={`circle-${circle.id + uuid()}`}
+                //   x={circle.x}
+                //   y={circle.y}
+                //   radius={circle.radius}
+                //   fill={"green"}
+                //   stroke={circle.stroke}
+                //   strokeWidth={2}
+                //   draggable={isDraggable}
+                //   onClick={(e) => handleCircClick(e, circle.id)}
+                // />
+                <CircleShape
+                  key={circle.id + uuid()}
+                  shapeProps={circle}
+                  isSelected={circle.id === selected}
+                  onSelect={() => {
+                    setSelected(circle.id);
+                  }}
+                  onChange={(newAttrs: any) => {
+                    console.log("newAttrs", newAttrs);
+                    const circle = circles.slice();
+                    // console.log("circle", circle);
+                    // const i = circle.findIndex((r) => r.id === newAttrs.id);
+                    // console.log("i", i);
+                    // circle[i] = newAttrs;
+                    // console.log("circle after", circle);
+                    updateShape(socket, newAttrs, roomId);
+                    const updatedCircles = circles.map((r) =>
+                      r.id === newAttrs.id ? { ...r, ...newAttrs } : r
+                    );
+                    setCircles(updatedCircles);
+                  }}
                 />
               )
           )}

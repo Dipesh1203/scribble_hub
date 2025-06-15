@@ -1,0 +1,70 @@
+import React from "react";
+import { Stage, Layer, Circle, Transformer } from "react-konva";
+
+export const CircleShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
+  const shapeRef = React.useRef();
+  const trRef = React.useRef();
+  // console.log("Rectangle shapeProps", shapeProps);
+  React.useEffect(() => {
+    if (isSelected) {
+      trRef.current.nodes([shapeRef.current]);
+    }
+  }, [isSelected]);
+
+  return (
+    <React.Fragment>
+      <Circle
+        radius={shapeProps.radius}
+        fill={shapeProps.fill}
+        stroke={shapeProps.stroke}
+        strokeWidth={shapeProps.strokeWidth}
+        x={shapeProps.x}
+        y={shapeProps.y}
+        onClick={onSelect}
+        onTap={onSelect}
+        ref={shapeRef}
+        // {...shapeProps}
+        draggable
+        onDragEnd={(e) => {
+          const newX = e.target.x();
+          const newY = e.target.y();
+          shapeRef.current.position({ x: newX, y: newY });
+          onChange({
+            ...shapeProps,
+            x: e.target.x(),
+            y: e.target.y(),
+          });
+        }}
+        onTransformEnd={(e) => {
+          const node = shapeRef.current;
+          const scaleX = node.scaleX();
+          const scaleY = node.scaleY();
+
+          // we will reset it back
+          node.scaleX(1);
+          node.scaleY(1);
+          onChange({
+            ...shapeProps,
+            x: node.x(),
+            y: node.y(),
+            // set minimal value
+            radius: Math.max(5, node.radius() * scaleX),
+          });
+        }}
+      />
+      {isSelected && (
+        <Transformer
+          ref={trRef}
+          flipEnabled={false}
+          boundBoxFunc={(oldBox, newBox) => {
+            // limit resize
+            // if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) {
+            //   return oldBox;
+            // }
+            return newBox;
+          }}
+        />
+      )}
+    </React.Fragment>
+  );
+};
