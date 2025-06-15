@@ -1,14 +1,15 @@
-import { HTTP_BACKEND } from "@/config";
+import { BACKEND_URL } from "@repo/common/server";
 import axios from "axios";
-import { HtmlContext } from "next/dist/server/route-modules/pages/vendored/contexts/entrypoints";
 
 type Shape =
   | { type: "rect"; x: number; y: number; width: number; height: number }
   | { type: "circle"; centerX: number; centerY: number; radius: number };
+
 export async function initDraw(
   canvas: HTMLCanvasElement,
   roomId: string,
-  socket: WebSocket
+  socket: WebSocket,
+  zoom: number
 ) {
   let existingShape: Shape[] = await getExistingShapes(roomId);
 
@@ -23,14 +24,14 @@ export async function initDraw(
       try {
         const parsedShape: Shape = JSON.parse(message.message).shape;
         existingShape.push(parsedShape);
-        clearCanvas(existingShape, canvas, ctx);
+        clearCanvas(existingShape, canvas, ctx, zoom);
       } catch (error) {
         console.error("Error parsing incoming shape data:", error);
       }
     }
   };
 
-  clearCanvas(existingShape, canvas, ctx);
+  clearCanvas(existingShape, canvas, ctx, zoom);
 
   let clicked = false;
   let startX = 0;
@@ -69,7 +70,7 @@ export async function initDraw(
     if (clicked) {
       const width = e.clientX - startX;
       const height = e.clientY - startY;
-      clearCanvas(existingShape, canvas, ctx);
+      clearCanvas(existingShape, canvas, ctx, zoom);
       ctx.strokeStyle = "rgba(255,255,255)";
       ctx.strokeRect(startX, startY, width, height);
     }
@@ -79,9 +80,11 @@ export async function initDraw(
 function clearCanvas(
   existingShape: Shape[],
   canvas: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D
+  ctx: CanvasRenderingContext2D,
+  zoom: number
 ) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.scale(zoom, zoom);
   ctx.fillStyle = "rgba(18,18,18)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   existingShape.map((shape) => {
@@ -93,7 +96,8 @@ function clearCanvas(
 }
 
 async function getExistingShapes(roomId: string) {
-  const res = await axios.get(`${HTTP_BACKEND}/chats/${roomId}`);
+  const res = await axios.get(`${BACKEND_URL}/api/chats/${roomId}`);
+
   const data = res.data.messages;
   const shapes = data
     .map((x: { message: string }) => {
