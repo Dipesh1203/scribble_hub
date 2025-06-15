@@ -132,5 +132,45 @@ wss.on("connection", function connection(ws, request) {
         console.error("Update failed:", error);
       }
     }
+
+    if (parsedData.type === "delete-roomchat") {
+      console.log("reached", parsedData);
+
+      const { roomId, id } = parsedData;
+      console.log("data ", roomId, id);
+      if (!roomId || !id) {
+        console.error("Missing data:", { roomId, id });
+        return;
+      }
+
+      try {
+        const chatExists = await prismaClient.chat.findUnique({
+          where: { id },
+        });
+
+        if (!chatExists) {
+          console.error("Chat with id", id, "not found");
+          return;
+        }
+
+        await prismaClient.chat.delete({
+          where: { id },
+        });
+
+        users.forEach((user) => {
+          if (user.rooms.includes(roomId)) {
+            console.log("ping");
+            user.ws.send(
+              JSON.stringify({
+                type: "chat",
+                roomId,
+              })
+            );
+          }
+        });
+      } catch (error) {
+        console.error("delete failed:", error);
+      }
+    }
   });
 });

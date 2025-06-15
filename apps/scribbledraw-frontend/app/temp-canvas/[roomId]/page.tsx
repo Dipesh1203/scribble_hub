@@ -4,7 +4,14 @@ import axios from "axios";
 import { get } from "http";
 import { DefaultSession } from "next-auth";
 import { useSession } from "next-auth/react";
-import React, { useRef, useState, useEffect, act, use } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  act,
+  use,
+  useCallback,
+} from "react";
 import { Circle, Layer, Rect, Stage, Transformer } from "react-konva";
 // import { uuid } from "crypto";
 import { uuid } from "uuidv4";
@@ -24,6 +31,7 @@ import ProfileDropdown from "@/components/ProfileDropdown";
 // import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Rectangle } from "@/components/konva-shapes/Rectangle";
 import { CircleShape } from "@/components/konva-shapes/CircleShape";
+import { ScribbleDraw } from "@/components/konva-shapes/ScribbleDraw";
 const strokeColor = "black";
 const fillColor = "#fff";
 // const isDraggable = true;
@@ -70,6 +78,13 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const isPainting = useRef(false);
   const currentShapeId = useRef<string | null>(null);
+  const [deletedShapes, setDeletedShapes] = useState<any[]>([]);
+  const [undoStack, setUndoStack] = useState<any[]>([]);
+  const [redoStack, setRedoStack] = useState<any[]>([]);
+  const [autoDeleteTimer, setAutoDeleteTimer] = useState(null);
+  const [scribbles, setScribbles] = useState<any[]>([]);
+  const [currentScribble, setCurrentScribble] = useState<any>(null);
+  const [isDrawing, setIsDrawing] = useState<boolean>(false);
 
   // Close on outside click
   useEffect(() => {
@@ -222,248 +237,8 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
 
   useEffect(() => {
     console.log("ref change");
-    setShapes([...rectangles, ...circles]);
-  }, [rectangles, circles]);
-
-  const zoomControls = [
-    {
-      name: "zoom-in",
-      icon: (
-        <svg
-          className="w-6 h-6 text-green-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="M21 21l-4.35-4.35" />
-          <line x1="8" y1="11" x2="14" y2="11" />
-          <line x1="11" y1="8" x2="11" y2="14" />
-        </svg>
-      ),
-      onClick: () => zoomIn(),
-    },
-    {
-      name: "zoom-out",
-      icon: (
-        <svg
-          className="w-6 h-6 text-red-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="M21 21l-4.35-4.35" />
-          <line x1="8" y1="11" x2="14" y2="11" />
-        </svg>
-      ),
-      onClick: () => zoomOut(),
-    },
-    {
-      name: "zoom-reset",
-      icon: (
-        <svg
-          className="w-6 h-6 text-blue-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="M21 21l-4.35-4.35" />
-          <circle cx="11" cy="11" r="3" />
-        </svg>
-      ),
-      onClick: () => resetZoom(),
-    },
-  ];
-  const floatingButtons = [
-    {
-      name: "cursor",
-      icon: (
-        <svg
-          className="w-6 h-6 text-gray-600"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path d="M3 3l7 17 2-7 7-2L3 3z" />
-        </svg>
-      ),
-      onClick: () => setAction(ACTIONS.SELECT),
-    },
-    {
-      name: "scribble",
-      icon: (
-        <svg
-          className="w-6 h-6 text-pink-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path d="M16 4l4 4L8 20H4v-4L16 4z" />
-        </svg>
-      ),
-      onClick: () => setAction(ACTIONS.SCRIBBLE),
-    },
-    {
-      name: "circle",
-      icon: (
-        <svg
-          className="w-6 h-6 text-blue-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <circle cx="12" cy="12" r="9" />
-        </svg>
-      ),
-      onClick: () => setAction(ACTIONS.CIRCLE),
-    },
-    {
-      name: "rectangle",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-6 h-6 text-purple-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" />
-        </svg>
-      ),
-      onClick: () => setAction(ACTIONS.RECTANGLE),
-    },
-    {
-      name: "text",
-      icon: (
-        <svg
-          className="w-6 h-6 text-blue-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path d="M4 4h16M12 4v16" />
-        </svg>
-      ),
-      onClick: () => setAction(ACTIONS.TEXT),
-    },
-    {
-      name: "delete",
-      icon: (
-        <svg
-          className="w-6 h-6 text-red-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path d="M6 7h12M9 7V4h6v3M10 11v6M14 11v6M5 7h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7z" />
-        </svg>
-      ),
-      onClick: () => setAction(ACTIONS.DELETE),
-    },
-    {
-      name: "arrow",
-      icon: (
-        <svg
-          className="w-6 h-6 text-green-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </svg>
-      ),
-      onClick: () => setAction(ACTIONS.ARROW),
-    },
-    {
-      name: "color",
-      icon: (
-        <label className="w-6 h-6 block relative cursor-pointer">
-          <svg
-            className="w-6 h-6 text-yellow-500"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path d="M12 22c4.418 0 8-4.03 8-9s-3.582-9-8-9-8 4.03-8 9 3.582 9 8 9z" />
-            <circle cx="12" cy="13" r="3" fill="currentColor" />
-          </svg>
-          <input
-            type="color"
-            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-            onChange={(e) => setSelectedColor(e.target.value)}
-          />
-        </label>
-      ),
-      onClick: () => {}, // No need for action switch, color is separate
-    },
-    {
-      name: "stroke",
-      icon: (
-        <label className="w-6 h-6 block relative cursor-pointer">
-          <svg
-            className="w-6 h-6 text-blue-500"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path d="M4 12h16" />
-          </svg>
-          <select
-            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-            onChange={(e) => setStrokeWidth(Number(e.target.value))}
-            value={strokeWidth}
-          >
-            <option value="1">Thin</option>
-            <option value="3">Medium</option>
-            <option value="5">Thick</option>
-            <option value="8">Extra Thick</option>
-          </select>
-        </label>
-      ),
-      onClick: () => {}, // Changing stroke doesn't require action switch
-    },
-    {
-      name: "strokeColor",
-      icon: (
-        <label className="w-6 h-6 block relative cursor-pointer">
-          <svg
-            className="w-6 h-6 text-black"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" />
-          </svg>
-          <input
-            type="color"
-            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-            onChange={(e) => setSelectedStrokeColor(e.target.value)}
-            value={selectedStrokeColor}
-          />
-        </label>
-      ),
-      onClick: () => {}, // No specific action needed on click
-    },
-    ...zoomControls,
-  ];
+    setShapes([...rectangles, ...circles, ...scribbles]);
+  }, [rectangles, circles, scribbles]);
 
   const animateZoom = (
     fromScale: number,
@@ -753,6 +528,18 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
           strokeWidth: strokeWidth,
         },
       ]);
+    } else if (action === ACTIONS.SCRIBBLE) {
+      console.log("scribble");
+      setIsDrawing(true);
+      const newScribble = {
+        type: "scribble",
+        id,
+        points: [relativePointer.x, relativePointer.y],
+        color: selectedColor,
+        strokeWidth: strokeWidth,
+      };
+      setCurrentScribble(newScribble);
+      setScribbles((prev) => [...prev, newScribble]);
     }
   };
 
@@ -764,17 +551,21 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
 
     const newCircles: any[] = [];
     const newRectangles: any[] = [];
+    const newScribbles: any[] = [];
 
     const shapesData = data
       .map((x: { message: { shape: any } }) => {
         try {
           const shape = x.message.shape || x.message;
           if (typeof shape === "object") {
-            if (shape.radius) {
+            if (shape.type === "circle" || shape.radius) {
               newCircles.push({ ...shape, chatId: x?.id });
             }
-            if (shape.width && shape.height) {
+            if (shape.type === "rectangle" || (shape.width && shape.height)) {
               newRectangles.push({ ...shape, chatId: x?.id });
+            }
+            if (shape.type === "scribble" || shape.points) {
+              newScribbles.push({ ...shape, chatId: x?.id });
             }
           }
           return shape;
@@ -787,6 +578,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
 
     setCircles((prev) => [...prev, ...newCircles]);
     setRectangles((prev) => [...prev, ...newRectangles]);
+    setScribbles((prev) => [...prev, ...newScribbles]);
     console.log(shapesData);
     return shapesData;
   };
@@ -810,6 +602,17 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
         id: shape.chatId || shape.id,
         roomId,
         message: { shape },
+      })
+    );
+  };
+
+  const deleteShape = (socket: WebSocket, shape: any, roomId: string) => {
+    console.log("delete hit", shape);
+    socket.send(
+      JSON.stringify({
+        type: "delete-roomchat",
+        id: shape.chatId || shape.id,
+        roomId,
       })
     );
   };
@@ -868,11 +671,66 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
             : circ
         )
       );
+    } else if (action === ACTIONS.SCRIBBLE) {
+      if (!currentScribble) {
+        // Start a new scribble
+        const newScribble = {
+          id: uuid(),
+          points: [relativePointer.x, relativePointer.y],
+          color: selectedColor,
+          strokeWidth: strokeWidth,
+        };
+        setCurrentScribble(newScribble);
+        setScribbles((prev) => [...prev, newScribble]);
+      } else {
+        // Continue the current scribble
+        setCurrentScribble((prev: any) => ({
+          ...prev,
+          points: [...prev.points, relativePointer.x, relativePointer.y],
+        }));
+      }
     }
   };
 
+  // const handleStageMouseUp = () => {
+  //   console.log("mouse up");
+  //   console.log("action ", action);
+
+  //   // If we were dragging the canvas, just stop dragging
+  //   if (isDragging.current) {
+  //     isDragging.current = false;
+  //     return;
+  //   }
+
+  //   // Handle shape creation completion
+  //   if (isDrawing && action === ACTIONS.SCRIBBLE && currentScribble) {
+  //     setIsDrawing(false);
+
+  //     // Only save scribbles with more than 2 points (1 line segment)
+  //     if (currentScribble.points.length > 4) {
+  //       setScribbles((prev) => [...prev, currentScribble]);
+  //     }
+
+  //     setCurrentScribble(null);
+  //   }
+  //   const tempId = currentShapeId.current;
+  //   let updatedShape =
+  //     rectangles.find((x) => x.id === tempId) ||
+  //     circles.find((x) => x.id === tempId);
+
+  //   console.log("updatedShape ", updatedShape);
+
+  //   if (socket && updatedShape && !updatedShape.chatId) {
+  //     send(socket, updatedShape, roomId);
+  //   }
+
+  //   isPainting.current = false;
+  //   currentShapeId.current = null;
+  // };
+
   const handleStageMouseUp = () => {
     console.log("mouse up");
+    console.log("action ", action);
 
     // If we were dragging the canvas, just stop dragging
     if (isDragging.current) {
@@ -880,18 +738,42 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       return;
     }
 
-    // Handle shape creation completion
-    const tempId = currentShapeId.current;
-    let updatedShape =
-      rectangles.find((x) => x.id === tempId) ||
-      circles.find((x) => x.id === tempId);
+    // Handle scribble completion
+    if (isDrawing && action === ACTIONS.SCRIBBLE && currentScribble) {
+      setIsDrawing(false);
 
-    console.log("updatedShape ", updatedShape);
+      // Only save scribbles with more than 2 points (1 line segment)
+      if (currentScribble.points.length > 4) {
+        setScribbles((prev) => [...prev, currentScribble]);
 
-    if (socket && updatedShape && !updatedShape.chatId) {
-      send(socket, updatedShape, roomId);
+        // Send scribble via socket if needed
+        if (socket && roomId) {
+          send(socket, currentScribble, roomId);
+        }
+      }
+
+      setCurrentScribble(null);
+      isPainting.current = false;
+      currentShapeId.current = null;
+      return; // Exit early for scribble handling
     }
 
+    // Handle shape creation completion (rectangles/circles)
+    if (isPainting.current && currentShapeId.current) {
+      const tempId = currentShapeId.current;
+      let updatedShape =
+        rectangles.find((x) => x.id === tempId) ||
+        circles.find((x) => x.id === tempId);
+
+      console.log("updatedShape ", updatedShape);
+
+      // Send shape via socket if it's new (no chatId)
+      if (socket && updatedShape && !updatedShape.chatId && roomId) {
+        send(socket, updatedShape, roomId);
+      }
+    }
+
+    // Reset painting state
     isPainting.current = false;
     currentShapeId.current = null;
   };
@@ -926,6 +808,553 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
     // Use animation for smooth wheel zoom
     animateZoom(oldScale, clampedScale, stagePos, newPos);
   };
+
+  // Undo redo functionality
+  // Push action to undo stack
+  const pushToUndoStack = useCallback((action: any) => {
+    setUndoStack((prev) => [...prev, action]);
+    setRedoStack([]); // Clear redo stack when new action is performed
+  }, []);
+
+  // Soft delete - move to temporary stack with visual indication
+  const softDeleteShape = useCallback(
+    (shapeId: string) => {
+      const shapeToDelete = shapes.find((s) => s.id === shapeId);
+      if (!shapeToDelete) return;
+
+      // Add to deleted stack with timestamp
+      const deletedShape = {
+        ...shapeToDelete,
+        deletedAt: Date.now(),
+        originalIndex: shapes.findIndex((s) => s.id === shapeId),
+      };
+
+      setDeletedShapes((prev) => [...prev, deletedShape]);
+      setShapes((prev) =>
+        prev.map((shape) =>
+          shape.id === shapeId
+            ? { ...shape, isDeleted: true, opacity: 0.3 }
+            : shape
+        )
+      );
+
+      setSelected(null);
+
+      // Auto-delete after 5 seconds (optional)
+      const timer = setTimeout(() => {
+        permanentDeleteShape(shapeId);
+      }, 5000 * 60);
+
+      setAutoDeleteTimer(timer);
+
+      // Push to undo stack
+      pushToUndoStack({
+        type: "SOFT_DELETE",
+        shapeId: shapeId,
+        shape: shapeToDelete,
+        timestamp: Date.now(),
+      });
+    },
+    [shapes, pushToUndoStack]
+  );
+
+  // Permanent delete - actually remove from shapes
+  const permanentDeleteShape = useCallback(
+    (shapeId: String) => {
+      const shapeToDelete = shapes.find((s) => s.id === shapeId);
+      setShapes((prev) => prev.filter((shape) => shape.id !== shapeId));
+      setDeletedShapes((prev) => prev.filter((shape) => shape.id !== shapeId));
+
+      if (autoDeleteTimer) {
+        clearTimeout(autoDeleteTimer);
+        setAutoDeleteTimer(null);
+      }
+      if (socket && shapeToDelete && roomId) {
+        deleteShape(socket, shapeToDelete, roomId);
+      }
+      console.log("permanent delete", shapeToDelete, " ", shapeId);
+      if (shapeToDelete.type === "rectangle") {
+        setRectangles((prev) => prev.filter((rect) => rect.id !== shapeId));
+      } else if (shapeToDelete.type === "circle") {
+        setCircles((prev) => prev.filter((circ) => circ.id !== shapeId));
+      } else if (shapeToDelete.type === "scribble") {
+        setScribbles((prev) =>
+          prev.filter((scribble) => scribble.id !== shapeId)
+        );
+      }
+    },
+    [shapes, autoDeleteTimer, socket, roomId, deleteShape]
+  );
+
+  // Restore deleted shape
+  const restoreShape = useCallback(
+    (shapeId: String) => {
+      const deletedShape = deletedShapes.find((s) => s.id === shapeId);
+      if (!deletedShape) return;
+
+      // Remove deleted flags and restore original state
+      setShapes((prev) =>
+        prev.map((shape) =>
+          shape.id === shapeId
+            ? { ...deletedShape, isDeleted: false, opacity: 1 }
+            : shape
+        )
+      );
+
+      setDeletedShapes((prev) => prev.filter((shape) => shape.id !== shapeId));
+
+      if (autoDeleteTimer) {
+        clearTimeout(autoDeleteTimer);
+        setAutoDeleteTimer(null);
+      }
+
+      pushToUndoStack({
+        type: "RESTORE",
+        shapeId: shapeId,
+        shape: deletedShape,
+        timestamp: Date.now(),
+      });
+    },
+    [deletedShapes, autoDeleteTimer, pushToUndoStack]
+  );
+
+  // Undo last action
+  const undo = useCallback(() => {
+    if (undoStack.length === 0) return;
+
+    const lastAction = undoStack[undoStack.length - 1];
+
+    switch (lastAction.type) {
+      case "SOFT_DELETE":
+        restoreShape(lastAction.shapeId);
+        break;
+      case "RESTORE":
+        softDeleteShape(lastAction.shapeId);
+        break;
+    }
+
+    // Move to redo stack
+    setRedoStack((prev) => [...prev, lastAction]);
+    setUndoStack((prev) => prev.slice(0, -1));
+  }, [undoStack, restoreShape, softDeleteShape]);
+
+  // Redo last undone action
+  const redo = useCallback(() => {
+    if (redoStack.length === 0) return;
+
+    const actionToRedo = redoStack[redoStack.length - 1];
+
+    switch (actionToRedo.type) {
+      case "SOFT_DELETE":
+        softDeleteShape(actionToRedo.shapeId);
+        break;
+      case "RESTORE":
+        restoreShape(actionToRedo.shapeId);
+        break;
+    }
+
+    setUndoStack((prev) => [...prev, actionToRedo]);
+    setRedoStack((prev) => prev.slice(0, -1));
+  }, [redoStack, softDeleteShape, restoreShape]);
+
+  // Confirm all pending deletes
+  const confirmAllDeletes = useCallback(() => {
+    deletedShapes.forEach((shape) => {
+      permanentDeleteShape(shape.id);
+    });
+    setDeletedShapes([]);
+
+    if (autoDeleteTimer) {
+      clearTimeout(autoDeleteTimer);
+      setAutoDeleteTimer(null);
+    }
+  }, [deletedShapes, permanentDeleteShape, autoDeleteTimer]);
+
+  // Cancel all pending deletes
+  const cancelAllDeletes = useCallback(() => {
+    deletedShapes.forEach((shape) => {
+      restoreShape(shape.id);
+    });
+  }, [deletedShapes, restoreShape]);
+
+  // // Handle shape selection
+  // const handleShapeClick = (e, shapeId) => {
+  //   e.cancelBubble = true;
+  //   const shape = shapes.find((s) => s.id === shapeId);
+  //   if (!shape.isDeleted) {
+  //     setSelected(shapeId);
+  //   }
+  // };
+
+  // // Handle stage click (deselect)
+  // const handleStageClick = (e) => {
+  //   if (e.target === e.target.getStage()) {
+  //     setSelected(null);
+  //   }
+  // };
+
+  const zoomControls = [
+    {
+      name: "zoom-in",
+      icon: (
+        <svg
+          className="w-6 h-6 text-green-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+          <line x1="8" y1="11" x2="14" y2="11" />
+          <line x1="11" y1="8" x2="11" y2="14" />
+        </svg>
+      ),
+      onClick: () => zoomIn(),
+    },
+    {
+      name: "zoom-out",
+      icon: (
+        <svg
+          className="w-6 h-6 text-red-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+          <line x1="8" y1="11" x2="14" y2="11" />
+        </svg>
+      ),
+      onClick: () => zoomOut(),
+    },
+    {
+      name: "zoom-reset",
+      icon: (
+        <svg
+          className="w-6 h-6 text-blue-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+          <circle cx="11" cy="11" r="3" />
+        </svg>
+      ),
+      onClick: () => resetZoom(),
+    },
+  ];
+
+  const deletePanelButtons = [
+    {
+      name: "Confirm Delete",
+      onClick: confirmAllDeletes,
+      className:
+        "px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600",
+    },
+    {
+      name: "Cancel All",
+      onClick: cancelAllDeletes,
+      icons: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          className="icon icon-tabler icons-tabler-outline icon-tabler-cancel"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+          <path d="M18.364 5.636l-12.728 12.728" />
+        </svg>
+      ),
+    },
+  ];
+  const controlButtons = [
+    {
+      name: "Soft Delete",
+      onClick: () => {
+        setAction(ACTIONS.DELETE);
+        selected && softDeleteShape(selected);
+      },
+      disabled: !selected || shapes.find((s) => s.id === selected)?.isDeleted,
+      label: `Soft Delete (${selected || "none"})`,
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          className="icon icon-tabler icons-tabler-outline icon-tabler-http-delete"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M3 8v8h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2z" />
+          <path d="M14 8h-4v8h4" />
+          <path d="M10 12h2.5" />
+          <path d="M17 8v8h4" />
+        </svg>
+      ),
+    },
+    {
+      name: "Undo",
+      onClick: undo,
+      disabled: undoStack.length === 0,
+      label: `Undo (${undoStack.length})`,
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          className="icon icon-tabler icons-tabler-outline icon-tabler-arrow-back-up"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M9 14l-4 -4l4 -4" />
+          <path d="M5 10h11a4 4 0 1 1 0 8h-1" />
+        </svg>
+      ),
+    },
+    {
+      name: "Redo",
+      onClick: redo,
+      disabled: redoStack.length === 0,
+      label: `Redo (${redoStack.length})`,
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          className="icon icon-tabler icons-tabler-outline icon-tabler-arrow-forward-up"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M15 14l4 -4l-4 -4" />
+          <path d="M19 10h-11a4 4 0 1 0 0 8h1" />
+        </svg>
+      ),
+    },
+  ];
+
+  const floatingButtons = [
+    {
+      name: "cursor",
+      icon: (
+        <svg
+          className="w-6 h-6 text-gray-600"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path d="M3 3l7 17 2-7 7-2L3 3z" />
+        </svg>
+      ),
+      onClick: () => setAction(ACTIONS.SELECT),
+    },
+    {
+      name: "scribble",
+      icon: (
+        <svg
+          className="w-6 h-6 text-pink-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path d="M16 4l4 4L8 20H4v-4L16 4z" />
+        </svg>
+      ),
+      onClick: () => setAction(ACTIONS.SCRIBBLE),
+    },
+    {
+      name: "circle",
+      icon: (
+        <svg
+          className="w-6 h-6 text-blue-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="9" />
+        </svg>
+      ),
+      onClick: () => setAction(ACTIONS.CIRCLE),
+    },
+    {
+      name: "rectangle",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-6 h-6 text-purple-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" />
+        </svg>
+      ),
+      onClick: () => setAction(ACTIONS.RECTANGLE),
+    },
+    {
+      name: "text",
+      icon: (
+        <svg
+          className="w-6 h-6 text-blue-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path d="M4 4h16M12 4v16" />
+        </svg>
+      ),
+      onClick: () => setAction(ACTIONS.TEXT),
+    },
+    {
+      name: "eraser",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          className="icon icon-tabler icons-tabler-outline icon-tabler-eraser"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3" />
+          <path d="M18 13.3l-6.3 -6.3" />
+        </svg>
+      ),
+      onClick: () => {
+        console.log("Delete clicked");
+        setAction(ACTIONS.DELETE);
+        console.log("action ", action);
+        // perm();
+      },
+    },
+    {
+      name: "arrow",
+      icon: (
+        <svg
+          className="w-6 h-6 text-green-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      ),
+      onClick: () => setAction(ACTIONS.ARROW),
+    },
+    {
+      name: "color",
+      icon: (
+        <label className="w-6 h-6 block relative cursor-pointer">
+          <svg
+            className="w-6 h-6 text-yellow-500"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 22c4.418 0 8-4.03 8-9s-3.582-9-8-9-8 4.03-8 9 3.582 9 8 9z" />
+            <circle cx="12" cy="13" r="3" fill={selectedColor} />
+          </svg>
+          <input
+            type="color"
+            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={(e) => setSelectedColor(e.target.value)}
+          />
+        </label>
+      ),
+      onClick: () => {}, // No need for action switch, color is separate
+    },
+    {
+      name: "stroke",
+      icon: (
+        <label className="w-6 h-6 block relative cursor-pointer">
+          <svg
+            className="w-6 h-6 text-blue-500"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path d="M4 12h16" />
+          </svg>
+          <select
+            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={(e) => setStrokeWidth(Number(e.target.value))}
+            value={strokeWidth}
+          >
+            <option value="1">Thin</option>
+            <option value="3">Medium</option>
+            <option value="5">Thick</option>
+            <option value="8">Extra Thick</option>
+          </select>
+        </label>
+      ),
+      onClick: () => {}, // Changing stroke doesn't require action switch
+    },
+    {
+      name: "strokeColor",
+      icon: (
+        <label className="w-6 h-6 block relative cursor-pointer">
+          <svg
+            className="w-6 h-6 text-black"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" />
+          </svg>
+          <input
+            type="color"
+            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={(e) => setSelectedStrokeColor(e.target.value)}
+            value={selectedStrokeColor}
+          />
+        </label>
+      ),
+      onClick: () => {}, // No specific action needed on click
+    },
+    ...zoomControls,
+  ];
 
   if (!socket) {
     return (
@@ -993,6 +1422,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       <ZoomDisplay />
       {/* OR add dedicated zoom toolbar */}
       <ZoomToolbar />
+
       {/* Canvas Area */}
       <Stage
         className="w-full"
@@ -1026,23 +1456,15 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
           {rectangles.map(
             (rect) =>
               rect && (
-                // <Rect
-                //   key={`rect-${rect.id + uuid()}`}
-                //   x={rect.x}
-                //   y={rect.y}
-                //   width={rect.width}
-                //   height={rect.height}
-                //   fill={rect.fill}
-                //   stroke={rect.stroke}
-                //   strokeWidth={2}
-                //   draggable={isDraggable}
-                //   onClick={(e) => handleRectClick(e, rect.id)}
-                // />
                 <Rectangle
                   key={rect.id + uuid()}
                   shapeProps={rect}
                   isSelected={rect.id === selected}
                   onSelect={() => {
+                    if (ACTIONS.DELETE === action) {
+                      permanentDeleteShape(rect.id);
+                      return;
+                    }
                     setSelected(rect.id);
                   }}
                   onChange={(newAttrs: any) => {
@@ -1066,22 +1488,15 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
           {circles.map(
             (circle) =>
               circle && (
-                // <Circle
-                //   key={`circle-${circle.id + uuid()}`}
-                //   x={circle.x}
-                //   y={circle.y}
-                //   radius={circle.radius}
-                //   fill={"green"}
-                //   stroke={circle.stroke}
-                //   strokeWidth={2}
-                //   draggable={isDraggable}
-                //   onClick={(e) => handleCircClick(e, circle.id)}
-                // />
                 <CircleShape
                   key={circle.id + uuid()}
                   shapeProps={circle}
                   isSelected={circle.id === selected}
                   onSelect={() => {
+                    if (ACTIONS.DELETE === action) {
+                      permanentDeleteShape(circle.id);
+                      return;
+                    }
                     setSelected(circle.id);
                   }}
                   onChange={(newAttrs: any) => {
@@ -1101,17 +1516,38 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
                 />
               )
           )}
+          {scribbles.map((scribble) => (
+            <ScribbleDraw
+              key={`scribble.id-${scribble.id}-${uuid()}`}
+              shapeProps={scribble}
+              isSelected={scribble.id === selected}
+              onSelect={() => {
+                if (ACTIONS.DELETE === action) {
+                  permanentDeleteShape(scribble.id);
+                  return;
+                }
+                setSelected(scribble.id);
+              }}
+              onChange={(newAttrs: any) => {
+                const updatedScribbles = scribbles.map((s) =>
+                  s.id === scribble.id ? { ...s, ...newAttrs } : s
+                );
+                setScribbles(updatedScribbles);
+              }}
+            />
+          ))}
           <Transformer ref={transformerRef} />
         </Layer>
       </Stage>
       {/* <!-- Floating Shape Selection Bar --> */}
       <div
         className="fixed z-50 
-    bottom-6 left-1/2 -translate-x-1/2 
-    lg:bottom-auto lg:left-4 lg:top-1/2 lg:-translate-x-0 lg:-translate-y-1/2
-    bg-white shadow-2xl rounded-full lg:rounded-xl 
-    px-4 py-2 lg:px-2 lg:py-4 
-    flex items-center lg:flex-col gap-4 border border-gray-200 backdrop-blur-lg"
+  bottom-6 left-1/2 -translate-x-1/2 
+  lg:bottom-auto lg:left-4 lg:top-1/2 lg:-translate-x-0 lg:-translate-y-1/2
+  bg-white shadow-2xl rounded-full lg:rounded-xl 
+  px-4 py-2 lg:px-2 lg:py-4 
+  flex items-center lg:flex-col gap-4 border border-gray-200 backdrop-blur-lg
+  max-w-full lg:max-h-[80vh] overflow-x-auto lg:overflow-y-auto custom-scrollbar"
       >
         {floatingButtons.map((btn) => (
           <button
