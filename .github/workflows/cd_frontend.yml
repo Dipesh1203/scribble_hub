@@ -1,5 +1,5 @@
 ## Build Docker Image
-name: Deploy HTTP Backend
+name: Deploy Scribble_hub frontend
 on:
   push:
     branches: [staging]
