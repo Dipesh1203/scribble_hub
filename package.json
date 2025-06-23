@@ -5,7 +5,11 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "start:web": "cd apps/scribbledraw-frontend && npm run start",
+    "start:backend": "cd apps/http-backend && npm run start",
+    "start:ws": "cd apps/ws-backend && npm run start",
+    "db:generate": "cd packages/db && npx prisma generate && cd ../.."
   },
   "devDependencies": {
     "prettier": "^3.5.3",
