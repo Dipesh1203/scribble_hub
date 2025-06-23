@@ -1,0 +1,23 @@
+FROM node:20-alpine
+
+WORKDIR /user/src/app
+
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
+COPY ./packages ./packages
+COPY ./package.json ./package.json
+
+COPY ./pnpm-lock.yaml ./pnpm-lock.yaml
+COPY ./pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY ./turbo.json ./turbo.json
+COPY ./apps/scribbledraw-frontend ./apps/scribbledraw-frontend
+
+RUN npm install -g pnpm
+RUN pnpm install
+RUN cd ./packages/db && npx prisma generate && cd ../..
+
+RUN npm run build
+
+# EXPOSE 3000
+CMD ["npm", "run", "start:web"]

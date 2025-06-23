@@ -17,22 +17,15 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      console.log("====");
       if (isSignin) {
         const res = await signIn("credentials", {
           redirect: false,
           email,
           password,
         });
-        console.log(res);
         if (res?.error) {
-          // setError("Authentication failed");
-          console.log("res.error");
-          console.log(res.error);
+          console.log("Authentication error:", res.error);
         } else {
-          // Handle successful login, redirect user or show message
-          console.log("Sucess");
-          console.log("room");
           router.push("/room");
         }
       } else {
@@ -41,13 +34,10 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
           username: email,
           password,
         });
-        console.log("response ", response);
         const data = response?.data;
-        console.log("data ", data);
         if (data) {
           router.push("/signin");
         }
-        console.log({ name, email, password });
       }
     } catch (error) {
       console.error("Error:", error);
@@ -55,13 +45,13 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
   };
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center bg-gray-900">
-      <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-2xl shadow-xl m-4">
+    <div className="w-screen h-screen flex justify-center items-center bg-gray-100">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl m-4">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-white">
+          <h2 className="text-3xl font-bold text-gray-900">
             {isSignin ? "Welcome Back" : "Create Account"}
           </h2>
-          <p className="mt-2 text-gray-400">
+          <p className="mt-2 text-gray-600">
             {isSignin
               ? "Sign in to access your account"
               : "Sign up to start creating"}
@@ -70,44 +60,45 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              className="w-full pl-10 pr-4 py-3 bg-gray-100 text-gray-900 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
               required
             />
           </div>
+
           {!isSignin && (
             <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
               <input
-                type="name"
+                type="text"
                 placeholder="Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-gray-100 text-gray-900 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 required
               />
             </div>
           )}
 
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-12 py-3 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              className="w-full pl-10 pr-12 py-3 bg-gray-100 text-gray-900 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
               required
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
             >
               {showPassword ? (
                 <EyeOff className="h-5 w-5" />
@@ -121,7 +112,7 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
             <div className="text-right">
               <a
                 href="#"
-                className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                className="text-sm text-purple-600 hover:text-purple-500 transition-colors"
               >
                 Forgot password?
               </a>
@@ -130,19 +121,19 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
 
           <button
             type="submit"
-            className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+            className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
           >
             {isSignin ? "Sign In" : "Create Account"}
           </button>
         </form>
 
-        <div className="text-center text-gray-400">
+        <div className="text-center text-gray-600">
           {isSignin ? (
             <p>
               Don't have an account?{" "}
               <Link
                 href="/signup"
-                className="text-purple-400 hover:text-purple-300 transition-colors"
+                className="text-purple-600 hover:text-purple-500 transition-colors"
               >
                 Sign up
               </Link>
@@ -152,7 +143,7 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
               Already have an account?{" "}
               <Link
                 href="/signin"
-                className="text-purple-400 hover:text-purple-300 transition-colors"
+                className="text-purple-600 hover:text-purple-500 transition-colors"
               >
                 Sign in
               </Link>
