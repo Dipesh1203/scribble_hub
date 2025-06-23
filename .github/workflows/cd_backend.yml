@@ -22,4 +22,4 @@ jobs:
           context: .
           file: ./docker/Dockerfile.backend
           push: true
-          tags: scribble_hub/user-app-backend:${{ github.sha }}
+          tags: dipesh2009/scribble_hub/user-app-backend:${{ github.sha }}
