@@ -1,0 +1,7 @@
+version: "1.0"
+services:
+  http-backend:
+    image: http-backend
+    container_name: http-backend
+    ports:
+      - "3000:3000"
