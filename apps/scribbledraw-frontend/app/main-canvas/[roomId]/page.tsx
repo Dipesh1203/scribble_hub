@@ -4,14 +4,7 @@ import axios from "axios";
 import { get } from "http";
 import { DefaultSession } from "next-auth";
 import { useSession } from "next-auth/react";
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  act,
-  use,
-  useCallback,
-} from "react";
+import React, { useRef, useState, useEffect, use, useCallback } from "react";
 import { Circle, Layer, Rect, Stage, Transformer } from "react-konva";
 // import { uuid } from "crypto";
 import { uuid } from "uuidv4";
@@ -32,6 +25,7 @@ import ProfileDropdown from "@/components/ProfileDropdown";
 import { Rectangle } from "@/components/konva-shapes/Rectangle";
 import { CircleShape } from "@/components/konva-shapes/CircleShape";
 import { ScribbleDraw } from "@/components/konva-shapes/ScribbleDraw";
+import { generateShapes } from "@/app/hooks/ShapeGenerator";
 const strokeColor = "black";
 const fillColor = "#fff";
 // const isDraggable = true;
@@ -85,8 +79,9 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   const [scribbles, setScribbles] = useState<any[]>([]);
   const [currentScribble, setCurrentScribble] = useState<any>(null);
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const [isGenerating, setIsGenrating] = useState<boolean>(false);
+  const [prompt, setPrompt] = useState("");
 
-  // Close on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -283,7 +278,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   };
 
   const ZoomToolbar = () => (
-    <div className="fixed top-4 right-4 bg-white shadow-2xl rounded-lg px-2 py-2 flex items-center gap-2 border border-gray-200 backdrop-blur-md">
+    <div className="z-10 fixed top-4 right-4 bg-white shadow-2xl rounded-lg px-2 py-2 flex items-center gap-2 border border-gray-200 backdrop-blur-md">
       <button
         onClick={() => zoomOut()}
         className={`p-2 rounded hover:bg-gray-100 text-gray-600 transition-colors ${
@@ -424,7 +419,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   };
 
   const ZoomDisplay = () => (
-    <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg px-3 py-2 text-sm font-mono border">
+    <div className="z-10 fixed top-4 right-4 bg-white shadow-lg rounded-lg px-3 py-2 text-sm font-mono border">
       {Math.round(stageScale * 100)}%
     </div>
   );
@@ -491,8 +486,6 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       return; // Exit early, don't create shapes
     }
 
-    // Only create shapes if we're not panning
-    // Use relative pointer position for correct coordinates
     const relativePointer = stage.getRelativePointerPosition();
 
     const id = uuid();
@@ -593,7 +586,6 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       })
     );
   };
-
   const updateShape = (socket: WebSocket, shape: any, roomId: string) => {
     console.log("update hit", shape);
     socket.send(
@@ -691,42 +683,6 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       }
     }
   };
-
-  // const handleStageMouseUp = () => {
-  //   console.log("mouse up");
-  //   console.log("action ", action);
-
-  //   // If we were dragging the canvas, just stop dragging
-  //   if (isDragging.current) {
-  //     isDragging.current = false;
-  //     return;
-  //   }
-
-  //   // Handle shape creation completion
-  //   if (isDrawing && action === ACTIONS.SCRIBBLE && currentScribble) {
-  //     setIsDrawing(false);
-
-  //     // Only save scribbles with more than 2 points (1 line segment)
-  //     if (currentScribble.points.length > 4) {
-  //       setScribbles((prev) => [...prev, currentScribble]);
-  //     }
-
-  //     setCurrentScribble(null);
-  //   }
-  //   const tempId = currentShapeId.current;
-  //   let updatedShape =
-  //     rectangles.find((x) => x.id === tempId) ||
-  //     circles.find((x) => x.id === tempId);
-
-  //   console.log("updatedShape ", updatedShape);
-
-  //   if (socket && updatedShape && !updatedShape.chatId) {
-  //     send(socket, updatedShape, roomId);
-  //   }
-
-  //   isPainting.current = false;
-  //   currentShapeId.current = null;
-  // };
 
   const handleStageMouseUp = () => {
     console.log("mouse up");
@@ -977,21 +933,13 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
     });
   }, [deletedShapes, restoreShape]);
 
-  // // Handle shape selection
-  // const handleShapeClick = (e, shapeId) => {
-  //   e.cancelBubble = true;
-  //   const shape = shapes.find((s) => s.id === shapeId);
-  //   if (!shape.isDeleted) {
-  //     setSelected(shapeId);
-  //   }
-  // };
-
-  // // Handle stage click (deselect)
-  // const handleStageClick = (e) => {
-  //   if (e.target === e.target.getStage()) {
-  //     setSelected(null);
-  //   }
-  // };
+  useEffect(() => {
+    if (!isGenerating) return;
+    const stage = stageRef.current;
+    const pointer = stage.getPointerPosition();
+    console.log("pointer", pointer);
+    generateShapes(setIsGenrating, socket, send, roomId, prompt, pointer);
+  }, [isGenerating]);
 
   const zoomControls = [
     {
@@ -1248,9 +1196,9 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          // stroke-width="2"
+          // stroke-linecap="round"
+          // stroke-linejoin="round"
           className="icon icon-tabler icons-tabler-outline icon-tabler-eraser"
         >
           <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -1422,6 +1370,47 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       <ZoomDisplay />
       {/* OR add dedicated zoom toolbar */}
       <ZoomToolbar />
+      {/* Floating Controls */}
+      <div className="z-50 fixed bottom-6 absolute bottom-6 right-6 bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">
+              Describe the shape:
+            </label>
+            <input
+              type="text"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="e.g., blue circle, red rectangle..."
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isGenerating) {
+                  () => setIsGenrating(true);
+                }
+              }}
+            />
+          </div>
+
+          <button
+            onClick={() => setIsGenrating(true)}
+            disabled={isGenerating || !prompt.trim()}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              isGenerating || !prompt.trim()
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
+            }`}
+          >
+            {isGenerating ? "Generating..." : "Generate Shape"}
+          </button>
+
+          <button
+            onClick={() => setShapes([])}
+            className="px-4 py-2 rounded-md font-medium bg-red-500 text-white hover:bg-red-600 active:bg-red-700 transition-colors"
+          >
+            Clear All
+          </button>
+        </div>
+      </div>
 
       {/* Canvas Area */}
       <Stage

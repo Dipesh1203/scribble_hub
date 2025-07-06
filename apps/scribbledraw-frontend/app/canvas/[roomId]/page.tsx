@@ -1,5 +1,6 @@
 import { initDraw } from "@/app/draw";
 import { RoomCanvas } from "@/components/RoomCanvas";
+import { use } from "react";
 
 export default async function CanvasPage({
   params,
