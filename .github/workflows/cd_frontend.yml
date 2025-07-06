@@ -23,5 +23,7 @@ jobs:
           file: ./docker/Dockerfile.frontend
           build-args: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
+            NEXT_PUBLIC_LLM_URL=${{ secrets.NEXT_PUBLIC_LLM_URL }}
+            NEXT_PUBLIC_LLM_TOKEN=${{ secrets.NEXT_PUBLIC_LLM_TOKEN }}
           push: true
           tags: dipesh2009/scribble_hub-frontend:${{ github.sha }}

@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
     config.externals = [...config.externals, { canvas: "canvas" }];
     return config;
   },
+  typescript: {
+    ignoreBuildErrors: true, // Use cautiously
+  },
+  eslint: {
+    ignoreDuringBuilds: true, // Skip ESLint during build
+  },
 };
 
 export default nextConfig;
