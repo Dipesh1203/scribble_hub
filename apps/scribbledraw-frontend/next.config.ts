@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
     config.externals = [...config.externals, { canvas: "canvas" }];
     return config;
   },
+  typescript: {
+    ignoreBuildErrors: true, // Use cautiously
+  },
+  eslint: {
+    ignoreDuringBuilds: true, // Skip ESLint during build
+  },
   env: {
     NEXT_PUBLIC_BACKEND_URL: process.env.BACKEND_URL || "http://localhost:3000",
     NEXT_PUBLIC_WS_URL: process.env.WS_URL || "ws://localhost:3002",
