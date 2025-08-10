@@ -26,6 +26,9 @@ import { Rectangle } from "@/components/konva-shapes/Rectangle";
 import { CircleShape } from "@/components/konva-shapes/CircleShape";
 import { ScribbleDraw } from "@/components/konva-shapes/ScribbleDraw";
 import { generateShapes } from "@/app/hooks/ShapeGenerator";
+import { HelpCircle, Settings, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 const strokeColor = "black";
 const fillColor = "#fff";
 // const isDraggable = true;
@@ -41,6 +44,7 @@ export interface Session extends DefaultSession {
 
 const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   const { roomId } = use(params);
+  const router = useRouter()
   const stageRef = useRef<any>(null);
   const transformerRef = useRef<any>(null);
   const [socket, setSocket] = useState<WebSocket | null>();
@@ -81,6 +85,9 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   const [isGenerating, setIsGenrating] = useState<boolean>(false);
   const [prompt, setPrompt] = useState("");
+  if (!session) {
+    router.push("/signin")
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -124,7 +131,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
 
   useEffect(() => {
     const ws = new WebSocket(
-      `${WS_URL}?token=${(session && session?.token) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiOTY3YWZmNy0yNTY4LTQ5OTUtYjQ1Ny1kNTFiODQwYjlhMWQiLCJpYXQiOjE3NDI0MTA1OTZ9.MCxZ34-iMznxnfZC8c4uSqRM5FmJYMXOYcvuLVaWKcU"}`
+      `${WS_URL}?token=${(session && session?.token)}`
     );
     console.log("ws", ws);
     console.log("roomId", roomId);
@@ -281,9 +288,8 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
     <div className="z-10 fixed top-4 right-4 bg-white shadow-2xl rounded-lg px-2 py-2 flex items-center gap-2 border border-gray-200 backdrop-blur-md">
       <button
         onClick={() => zoomOut()}
-        className={`p-2 rounded hover:bg-gray-100 text-gray-600 transition-colors ${
-          isAnimating ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className={`p-2 rounded hover:bg-gray-100 text-gray-600 transition-colors ${isAnimating ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         disabled={stageScale <= MIN_SCALE || isAnimating}
       >
         <svg
@@ -300,18 +306,16 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       </button>
 
       <span
-        className={`text-sm font-mono min-w-[3rem] text-center transition-colors ${
-          isAnimating ? "text-blue-500" : "text-gray-700"
-        }`}
+        className={`text-sm font-mono min-w-[3rem] text-center transition-colors ${isAnimating ? "text-blue-500" : "text-gray-700"
+          }`}
       >
         {Math.round(stageScale * 100)}%
       </span>
 
       <button
         onClick={() => zoomIn()}
-        className={`p-2 rounded hover:bg-gray-100 text-gray-600 transition-colors ${
-          isAnimating ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className={`p-2 rounded hover:bg-gray-100 text-gray-600 transition-colors ${isAnimating ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         disabled={stageScale >= MAX_SCALE || isAnimating}
       >
         <svg
@@ -330,9 +334,8 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
 
       <button
         onClick={resetZoom}
-        className={`p-2 rounded hover:bg-gray-100 text-gray-600 text-xs transition-colors ${
-          isAnimating ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className={`p-2 rounded hover:bg-gray-100 text-gray-600 text-xs transition-colors ${isAnimating ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         disabled={isAnimating}
         title="Reset Zoom"
       >
@@ -341,9 +344,8 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
 
       <button
         onClick={zoomToFitAll}
-        className={`p-2 rounded hover:bg-gray-100 text-gray-600 transition-colors ${
-          isAnimating ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className={`p-2 rounded hover:bg-gray-100 text-gray-600 transition-colors ${isAnimating ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         disabled={isAnimating}
         title="Fit All"
       >
@@ -640,10 +642,10 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
         rects.map((rect) =>
           rect.id === currentShapeId.current
             ? {
-                ...rect,
-                width: relativePointer.x - rect.x,
-                height: relativePointer.y - rect.y,
-              }
+              ...rect,
+              width: relativePointer.x - rect.x,
+              height: relativePointer.y - rect.y,
+            }
             : rect
         )
       );
@@ -652,14 +654,14 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
         circles.map((circ) =>
           circ.id === currentShapeId.current
             ? {
-                ...circ,
-                radius: calDis(
-                  circ.x,
-                  circ.y,
-                  relativePointer.x,
-                  relativePointer.y
-                ),
-              }
+              ...circ,
+              radius: calDis(
+                circ.x,
+                circ.y,
+                relativePointer.x,
+                relativePointer.y
+              ),
+            }
             : circ
         )
       );
@@ -1249,7 +1251,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
           />
         </label>
       ),
-      onClick: () => {}, // No need for action switch, color is separate
+      onClick: () => { }, // No need for action switch, color is separate
     },
     {
       name: "stroke",
@@ -1276,7 +1278,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
           </select>
         </label>
       ),
-      onClick: () => {}, // Changing stroke doesn't require action switch
+      onClick: () => { }, // Changing stroke doesn't require action switch
     },
     {
       name: "strokeColor",
@@ -1299,7 +1301,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
           />
         </label>
       ),
-      onClick: () => {}, // No specific action needed on click
+      onClick: () => { }, // No specific action needed on click
     },
     ...zoomControls,
   ];
@@ -1319,7 +1321,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       <div className="fixed top-6 left-16 z-50" ref={dropdownRef}>
         <button
           onClick={() => setOpen(!open)}
-          className="p-2 bg-white rounded-full shadow-md border hover:bg-gray-50"
+          className="p-2 bg-white rounded-md  shadow-md hover:bg-gray-50"
           aria-label="Open Profile Menu"
         >
           <svg
@@ -1338,30 +1340,20 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
         </button>
 
         {open && (
-          <div className="mt-2 w-60 rounded-xl shadow-2xl border bg-white backdrop-blur-md">
-            <div className="flex flex-col py-2">
-              <button className="w-4 h-4">Click</button>
-              <button className="w-4 h-4">Click</button>
-              <button className="w-4 h-4">Click</button>
-              {/* <MenuItem
-                icon={<User className="w-4 h-4" />}
-                label="Your Profile"
-                />
-                <MenuItem
-                icon={<Settings className="w-4 h-4" />}
-                label="Settings"
-                />
-                <MenuItem
-                icon={<HelpCircle className="w-4 h-4" />}
-                label="Help"
-                /> */}
-              <hr className="my-1 border-gray-200" />
-              <button className="w-4 h-4">Click</button>
-              {/* <MenuItem
-                icon={<LogOut className="w-4 h-4 text-red-500" />}
-                label="Logout"
-                danger
-              /> */}
+          <div className="z-49 mt-2 w-60 rounded-xl shadow-2xl border bg-white backdrop-blur-md">
+            <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDividerButton">
+              <li>
+                <Link href="/room" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Home</Link>
+              </li>
+              <li>
+                <Link href="/settings" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Settings</Link>
+              </li>
+              <li>
+                <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Profile</Link>
+              </li>
+            </ul>
+            <div className="py-2">
+              <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Separated link</a>
             </div>
           </div>
         )}
@@ -1371,7 +1363,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       {/* OR add dedicated zoom toolbar */}
       <ZoomToolbar />
       {/* Floating Controls */}
-      <div className="z-50 fixed bottom-6 absolute bottom-6 right-6 bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+      <div className="z-45 fixed bottom-6 absolute bottom-6 right-6 bg-white rounded-lg shadow-lg p-4 border border-gray-200">
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
@@ -1394,11 +1386,10 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
           <button
             onClick={() => setIsGenrating(true)}
             disabled={isGenerating || !prompt.trim()}
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              isGenerating || !prompt.trim()
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
-            }`}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${isGenerating || !prompt.trim()
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
+              }`}
           >
             {isGenerating ? "Generating..." : "Generate Shape"}
           </button>
@@ -1530,7 +1521,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       </Stage>
       {/* <!-- Floating Shape Selection Bar --> */}
       <div
-        className="fixed z-50 
+        className="fixed z-45 
   bottom-6 left-1/2 -translate-x-1/2 
   lg:bottom-auto lg:left-4 lg:top-1/2 lg:-translate-x-0 lg:-translate-y-1/2
   bg-white shadow-2xl rounded-full lg:rounded-xl 
@@ -1575,9 +1566,8 @@ const MenuItem = ({
   danger?: boolean;
 }) => (
   <button
-    className={`flex items-center px-4 py-2 text-sm gap-2 text-left hover:bg-gray-100 w-full ${
-      danger ? "text-red-600" : "text-gray-700"
-    }`}
+    className={`flex items-center px-4 py-2 text-sm gap-2 text-left hover:bg-gray-100 w-full ${danger ? "text-red-600" : "text-gray-700"
+      }`}
   >
     {/* {icon} */}
     <span>{label}</span>

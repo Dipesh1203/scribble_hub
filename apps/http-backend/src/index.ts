@@ -10,6 +10,7 @@ import {
 import { prismaClient } from "@repo/db/client";
 import cors from "cors";
 import bcrypt from "bcrypt";
+import generateRoomID from "./utils/helper";
 
 const app = express();
 app.listen(3000);
@@ -99,26 +100,23 @@ app.post("/api/signin", async (req, res) => {
 });
 
 app.post("/api/room", middleware, async (req, res) => {
-  const parsedData = CreateRoomSchema.safeParse(req.body);
-  if (!parsedData.success) {
-    res.json({
-      message: "Incorrect inputs",
-    });
-    return;
-  }
   // @ts-ignore: TODO: Fix this
   const userId = req.userId;
+  console.log("===============");
 
   try {
+    const newRoomId = generateRoomID();
+    console.log(newRoomId + " ===========");
     const room = await prismaClient.room.create({
       data: {
-        slug: parsedData.data.name,
+        slug: newRoomId,
         adminId: userId,
       },
     });
+    console.log(room);
 
     res.json({
-      roomId: room.id,
+      roomId: room.slug,
     });
   } catch (e) {
     res.status(411).json({
@@ -155,6 +153,7 @@ app.get("/api/chats/:roomId", async (req, res) => {
 
 app.get("/api/room/:slug", async (req, res) => {
   const slug = req.params.slug;
+  console.log("reached ", slug);
   const room = await prismaClient.room.findFirst({
     where: {
       slug,

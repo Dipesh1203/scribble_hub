@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Video,
   Settings,
@@ -18,12 +18,15 @@ import {
   Shield,
   Palette,
   Globe,
+  Link2Icon,
+  ClipboardIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BACKEND_URL } from "@repo/common/server";
 import { useSession } from "next-auth/react";
 import { Session } from "../api/auth/[...nextauth]/options";
 import axios from "axios";
+import { getRoomid, getRoomidFromSlug } from "../actions/room";
 
 // Mock session data for demo
 const mockSession = {
@@ -39,47 +42,63 @@ const mockSession = {
 export default function Home() {
   const [roomName, setRoomName] = useState("");
   const [activeTab, setActiveTab] = useState("home");
+  const { data, status } = useSession();
+  const session = data as Session;
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [isAudioOn, setIsAudioOn] = useState(true);
   const router = useRouter();
-
+  const token = session?.token;
   // Profile update states
   const [profileName, setProfileName] = useState(mockSession.user.name);
   const [profileEmail, setProfileEmail] = useState(mockSession.user.email);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-
-  // Settings states
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [language, setLanguage] = useState("English");
-  const { data, status } = useSession();
-  const session = data as Session;
-  console.log("Session data:", session);
+  const [roomIdLater, setRoomIdLater] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  console.log("Session data:", data, status);
+  // if (!session) {
+  //   router.push("/signin")
+  // }
+  useEffect(() => {
+    if (!token) {
+      router.push("/signin");
+    }
+  }, [token]);
+
   const createRoom = async () => {
     try {
-      const res = await axios.post(
-        `${BACKEND_URL}/api/room`,
-        { name: roomName },
-        {
-          headers: {
-            Authorization: `Bearer ${session.token}`, // Include JWT
-          },
-        }
-      );
-      console.log("created");
-      console.log(res);
-      router.push(`/main-canvas/${res.data.roomId}`);
-      setRoomName("");
+      const slug = await getRoomid(token);
+      console.log("slug ", slug.roomId)
+      const roomId = await getRoomidFromSlug(slug.roomId, token);
+      console.log(roomId)
+      if (roomId.room.id) {
+        router.push(`/main-canvas/${roomId.room.id}`);
+      }
     } catch (error) {
       console.error("Error creating room", error);
     }
   };
+  const createRoomforLater = async () => {
+    try {
+      console.log("clicked")
+      console.log(token)
+      const res = await getRoomid(token);
+      console.log(res)
+      setRoomIdLater(res.roomId);
+    } catch (error) {
+      console.error("Error creating room", error);
+    }
+  }
 
-  const joinRoomWithCode = () => {
-    const code = prompt("Enter room code:");
-    if (code) {
-      // alert(`Joining room with code: ${code}`);
-      router.push(`/main-canvas/${code}`);
+  const joinRoomWithCode = async () => {
+    const slug = prompt("Enter room code:") || "";
+    const roomId = await getRoomidFromSlug(slug, token);
+    console.log(roomId)
+    if (roomId.room.id) {
+      router.push(`/main-canvas/${roomId.room.id}`);
     }
   };
 
@@ -117,19 +136,33 @@ export default function Home() {
           </div>
 
           <div className="space-y-4">
-            <input
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
-              type="text"
-              placeholder="Enter room name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <button
+              onClick={createRoomforLater}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+            >
+              {copied ? (
+                <>
+                  <ClipboardIcon className="w-5 h-5 mr-2" />
+                  Copied: {roomIdLater}
+                </>
+              ) : (
+                <>
+                  <Plus className="w-5 h-5 mr-2" />
+                  Create Meeting for later
+                </>
+              )}
+            </button>
+
+            {roomIdLater && !copied && (
+              <p className="text-center text-gray-600 text-sm">
+                Room Code: <code className="font-mono">{roomIdLater}</code>
+              </p>
+            )}
             <button
               onClick={createRoom}
-              disabled={!roomName.trim()}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
             >
-              <Plus className="w-5 h-5 mr-2" />
+              <Link2Icon className="w-5 h-5 mr-2" />
               Start an instant meeting
             </button>
           </div>
@@ -468,31 +501,28 @@ export default function Home() {
             <nav className="hidden md:flex space-x-8">
               <button
                 onClick={() => setActiveTab("home")}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  activeTab === "home"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:text-gray-800"
-                }`}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "home"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:text-gray-800"
+                  }`}
               >
                 Home
               </button>
               <button
                 onClick={() => setActiveTab("profile")}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  activeTab === "profile"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:text-gray-800"
-                }`}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "profile"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:text-gray-800"
+                  }`}
               >
                 Profile
               </button>
               <button
                 onClick={() => setActiveTab("settings")}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  activeTab === "settings"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:text-gray-800"
-                }`}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "settings"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:text-gray-800"
+                  }`}
               >
                 Settings
               </button>

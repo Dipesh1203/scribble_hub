@@ -13,6 +13,7 @@
     "@tabler/icons-react": "^3.34.0",
     "axios": "^1.8.4",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.23.12",
     "konva": "^9.3.20",
     "lucide-react": "^0.485.0",
     "motion": "^12.17.3",
