@@ -23,3 +23,9 @@ jobs:
           file: ./docker/Dockerfile.backend
           push: true
           tags: dipesh2009/scribble_hub-backend:${{ github.sha }}
+      - run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
+          mkdir -p /home/runner/.ssh
+          ls /home/runner/.ssh
+          chmod 700 /home/runner/ssh_key
+          ssh -o StrictHostKeyChecking=no -i ~/ssh_key root@172.31.31.153 -t "docker stop backend_server && docker run --name backend_server -d -p 3001:3001 dipesh2009/scribble_hub-websocket:${{ github.sha }}"

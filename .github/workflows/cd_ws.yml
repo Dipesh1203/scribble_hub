@@ -23,3 +23,9 @@ jobs:
           file: ./docker/Dockerfile.websocket
           push: true
           tags: dipesh2009/scribble_hub-websocket:${{ github.sha }}
+      - run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
+          mkdir -p /home/runner/.ssh
+          ls /home/runner/.ssh
+          chmod 700 /home/runner/ssh_key
+          ssh -o StrictHostKeyChecking=no -i ~/ssh_key root@172.31.31.153 -t "docker stop web_socket && docker run --name web_socket -d -p 3002:3002 dipesh2009/scribble_hub-websocket:${{ github.sha }}"
