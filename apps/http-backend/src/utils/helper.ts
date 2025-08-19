@@ -1,4 +1,4 @@
-function generateRoomID() {
+export const generateRoomID = () => {
   const chars = "abcdefghijklmnopqrstuvwxyz";
 
   function getRandomPart(length: number) {
@@ -15,5 +15,4 @@ function generateRoomID() {
   const part3 = getRandomPart(3);
 
   return `${part1}-${part2}-${part3}`;
-}
-export default generateRoomID;
+};

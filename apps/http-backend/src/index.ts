@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import router from "./routes";
 import bcrypt from "bcrypt";
-import generateRoomID from "./utils/helper";
 
 const app = express();
 app.use(express.json());

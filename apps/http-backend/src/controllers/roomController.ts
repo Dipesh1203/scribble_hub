@@ -1,22 +1,31 @@
 import { Request, Response } from "express";
 import { CreateRoomSchema } from "@repo/common/types";
 import { prismaClient } from "@repo/db/client";
+import { generateRoomID } from "../utils/helper";
 
 export const createRoom = async (req: Request, res: Response) => {
-  const parsedData = CreateRoomSchema.safeParse(req.body);
-  if (!parsedData.success) {
-    res.json({ message: "Incorrect inputs" });
-    return;
-  }
   // @ts-ignore: TODO: Fix this
   const userId = req.userId;
+  console.log("===============");
+
   try {
+    const newRoomId = generateRoomID();
+    console.log(newRoomId + " ===========");
     const room = await prismaClient.room.create({
-      data: { slug: parsedData.data.name, adminId: userId },
+      data: {
+        slug: newRoomId,
+        adminId: userId,
+      },
     });
-    res.json({ roomId: room.id });
+    console.log(room);
+
+    res.json({
+      roomId: room.slug,
+    });
   } catch (e) {
-    res.status(411).json({ message: "Room already exists with this name" });
+    res.status(411).json({
+      message: "Room already exists with this name",
+    });
   }
 };
 
