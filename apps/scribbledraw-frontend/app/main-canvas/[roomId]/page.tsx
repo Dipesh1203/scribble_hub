@@ -26,9 +26,6 @@ import { Rectangle } from "@/components/konva-shapes/Rectangle";
 import { CircleShape } from "@/components/konva-shapes/CircleShape";
 import { ScribbleDraw } from "@/components/konva-shapes/ScribbleDraw";
 import { generateShapes } from "@/app/hooks/ShapeGenerator";
-import { HelpCircle, Settings, User } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 const strokeColor = "black";
 const fillColor = "#fff";
 // const isDraggable = true;
@@ -85,9 +82,6 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   const [isGenerating, setIsGenrating] = useState<boolean>(false);
   const [prompt, setPrompt] = useState("");
-  if (!session) {
-    router.push("/signin")
-  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -1363,7 +1357,7 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
       {/* OR add dedicated zoom toolbar */}
       <ZoomToolbar />
       {/* Floating Controls */}
-      <div className="z-45 fixed bottom-6 absolute bottom-6 right-6 bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+      <div className="z-50 fixed bottom-6 absolute bottom-6 right-6 bg-white rounded-lg shadow-lg p-4 border border-gray-200">
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
@@ -1387,8 +1381,8 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
             onClick={() => setIsGenrating(true)}
             disabled={isGenerating || !prompt.trim()}
             className={`px-4 py-2 rounded-md font-medium transition-colors ${isGenerating || !prompt.trim()
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
               }`}
           >
             {isGenerating ? "Generating..." : "Generate Shape"}

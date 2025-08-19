@@ -23,7 +23,21 @@ jobs:
           file: ./docker/Dockerfile.frontend
           build-args: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
-            NEXT_PUBLIC_LLM_URL=${{ secrets.NEXT_PUBLIC_LLM_URL }}
-            NEXT_PUBLIC_LLM_TOKEN=${{ secrets.NEXT_PUBLIC_LLM_TOKEN }}
+            BACKEND_URL=${{ secrets.BACKEND_URL || 'http://localhost:3000' }}
+            WS_URL=${{ secrets.WS_URL || 'ws://localhost:3002' }}
+            SCRIBBLE_FRONTEND_URL=${{ secrets.SCRIBBLE_FRONTEND_URL || 'http://localhost:3003' }}
           push: true
           tags: dipesh2009/scribble_hub-frontend:${{ github.sha }}
+      - run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
+          mkdir -p /home/runner/.ssh
+          ls /home/runner/.ssh
+          chmod 700 /home/runner/ssh_key
+          ssh -o StrictHostKeyChecking=no -i ~/ssh_key root@172.31.31.153 -t "docker stop scribble_frontend && docker run -d --name scribble_frontend -p 3000:3000 \
+              -e BACKEND_URL='${{ secrets.BACKEND_URL }}' \
+              -e SCRIBBLE_FRONTEND_URL='${{ secrets.SCRIBBLE_FRONTEND_URL }}' \
+              -e WS_URL='${{ secrets.WS_URL }}' \
+              -e NEXT_PUBLIC_LLM_URL='${{ secrets.NEXT_PUBLIC_LLM_URL }}' \
+              -e NEXT_PUBLIC_LLM_TOKEN='${{ secrets.NEXT_PUBLIC_LLM_TOKEN }}' \
+              -e NEXTAUTH_SECRET='${{ secrets.NEXTAUTH_SECRET }}' \
+              dipesh2009/scribble_hub-frontend:${{ github.sha }}"

@@ -1,5 +1,29 @@
 "use client";
 import React, { useState } from "react";
+// Simple Toast implementation
+function showToast(message: string, type: 'success' | 'error' = 'success') {
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.position = 'fixed';
+  toast.style.bottom = '32px';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.background = type === 'success' ? '#4ade80' : '#f87171';
+  toast.style.color = '#fff';
+  toast.style.padding = '12px 24px';
+  toast.style.borderRadius = '8px';
+  toast.style.fontSize = '1rem';
+  toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+  toast.style.zIndex = '9999';
+  toast.style.opacity = '0';
+  toast.style.transition = 'opacity 0.3s';
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '1'; }, 10);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => document.body.removeChild(toast), 300);
+  }, 2500);
+}
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
@@ -24,22 +48,26 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
           password,
         });
         if (res?.error) {
+          showToast("Authentication failed. Please check your credentials.", 'error');
           console.log("Authentication error:", res.error);
         } else {
-          router.push("/room");
+          showToast("Signed in successfully!", 'success');
+          setTimeout(() => router.push("/room"), 800);
         }
       } else {
         const response = await axios.post(`${BACKEND_URL}/api/signup`, {
           name,
-          username: email,
+          email,
           password,
         });
         const data = response?.data;
         if (data) {
-          router.push("/signin");
+          showToast("Account created! Please sign in.", 'success');
+          setTimeout(() => router.push("/signin"), 1000);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || "An error occurred. Please try again.", 'error');
       console.error("Error:", error);
     }
   };
