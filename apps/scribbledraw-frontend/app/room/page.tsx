@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   Video,
   Settings,
-  User,
   Plus,
   Calendar,
   Clock,
@@ -16,17 +15,13 @@ import {
   LogOut,
   Bell,
   Shield,
-  Palette,
-  Globe,
   Link2Icon,
   ClipboardIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { BACKEND_URL } from "@repo/common/server";
 import { useSession } from "next-auth/react";
 import { Session } from "../api/auth/[...nextauth]/options";
-import axios from "axios";
-import { getRoomid, getRoomidFromSlug } from "../actions/room";
+import { getRoomid, getRoomidFromSlug, getUserRoomInfo } from "../actions/room";
 
 // Mock session data for demo
 const mockSession = {
@@ -40,7 +35,6 @@ const mockSession = {
 };
 
 export default function Home() {
-  const [roomName, setRoomName] = useState("");
   const [activeTab, setActiveTab] = useState("home");
   const { data, status } = useSession();
   const session = data as Session;
@@ -56,7 +50,12 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState(true);
   const [language, setLanguage] = useState("English");
   const [roomIdLater, setRoomIdLater] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [copied] = useState(false);
+  const [userRoomInfo, setUserRoomInfo] = useState({
+    currentRoom: null,
+    lastJoinedRoom: null,
+    recentRooms: []
+  });
 
   console.log("Session data:", data, status);
   // if (!session) {
@@ -66,6 +65,16 @@ export default function Home() {
     if (!token) {
       router.push("/signin");
     }
+  }, [token, router]);
+
+  useEffect(() => {
+    const fetchUserRoomInfo = async () => {
+      if (token) {
+        const roomInfo = await getUserRoomInfo(token);
+        setUserRoomInfo(roomInfo);
+      }
+    };
+    fetchUserRoomInfo();
   }, [token]);
 
   const createRoom = async () => {
@@ -247,13 +256,65 @@ export default function Home() {
       {/* Recent Rooms */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">
-          Recent rooms
+          Your Rooms
         </h3>
+        
+        {/* Current and Last Joined Rooms */}
+        {(userRoomInfo.currentRoom || userRoomInfo.lastJoinedRoom) && (
+          <div className="mb-6">
+            {userRoomInfo.currentRoom && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+                      <Video className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">Current Room</p>
+                      <p className="text-sm text-gray-600">Room ID: {userRoomInfo.currentRoom.slug}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => router.push(`/main-canvas/${userRoomInfo.currentRoom?.id}`)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {userRoomInfo.lastJoinedRoom && userRoomInfo.lastJoinedRoom.id !== userRoomInfo.currentRoom?.id && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
+                      <Clock className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">Last Joined Room</p>
+                      <p className="text-sm text-gray-600">Room ID: {userRoomInfo.lastJoinedRoom.slug}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => router.push(`/main-canvas/${userRoomInfo.lastJoinedRoom?.id}`)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium"
+                  >
+                    Rejoin
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Recent Rooms List */}
         <div className="space-y-3">
-          {["Design Review", "Team Standup", "Client Presentation"].map(
-            (room, index) => (
+          <h4 className="font-medium text-gray-700 mb-3">Recent Rooms</h4>
+          {userRoomInfo.recentRooms.length > 0 ? (
+            userRoomInfo.recentRooms.map((room: any, index: number) => (
               <div
-                key={index}
+                key={room.id}
                 className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <div className="flex items-center">
@@ -261,18 +322,23 @@ export default function Home() {
                     <Video className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-800">{room}</p>
+                    <p className="font-medium text-gray-800">Room {room.slug}</p>
                     <p className="text-sm text-gray-600">
                       <Clock className="w-3 h-3 inline mr-1" />
-                      {index + 1} day{index === 0 ? "" : "s"} ago
+                      Created {new Date(room.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
-                <button className="text-blue-600 hover:text-blue-700 font-medium">
+                <button 
+                  onClick={() => router.push(`/main-canvas/${room.id}`)}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
                   Join
                 </button>
               </div>
-            )
+            ))
+          ) : (
+            <p className="text-gray-500 text-center py-4">No recent rooms found. Create your first room!</p>
           )}
         </div>
       </div>

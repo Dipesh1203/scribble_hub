@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { Request } from "express";
 
 export const CreateUserSchema = z.object({
   email: z.string().min(3).max(20),
@@ -40,11 +39,6 @@ export interface Chat {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
-}
-
-// Extended Express Request interface
-export interface AuthRequest extends Request {
-  userId?: string;
 }
 
 export interface ErrorResponse {

@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import {
   Palette,
   Users,
-  Sparkles,
   Share2,
   Play,
   ArrowRight,

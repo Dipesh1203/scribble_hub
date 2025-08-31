@@ -1,7 +1,7 @@
 import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common/config";
-import { AuthRequest } from "@repo/common/types";
+import { AuthRequest } from "./types";
 
 export function middleware(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers["authorization"] ?? "";

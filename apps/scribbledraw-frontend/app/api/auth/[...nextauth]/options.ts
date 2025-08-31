@@ -1,18 +1,7 @@
 import { DefaultSession, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import {
-  CreateUserSchema,
-  SigninSchema,
-  CreateRoomSchema,
-} from "@repo/common/types";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { BACKEND_URL } from "@repo/common/server";
-
-interface userType {
-  id: string;
-  name: string;
-  email: string;
-}
 export interface Session extends DefaultSession {
   user: {
     id: string;
@@ -40,7 +29,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(
         credentials: { username: string; password: string } | undefined
-      ): Promise<any> {
+      ): Promise<AuthResponse | null> {
         try {
           console.log(BACKEND_URL);
           console.log("credentials ", credentials);
@@ -53,12 +42,11 @@ export const authOptions: NextAuthOptions = {
 
           if (!res.ok || !user?.data?.token) {
             return null;
-            // throw new Error("No user found Authentication failed");
           }
           return user;
-        } catch (error: any) {
-          console.log("eadsfasdfas");
-          throw new Error(error.message || "Authentication failed");
+        } catch (error: unknown) {
+          console.log("Authentication error");
+          throw new Error((error as Error).message || "Authentication failed");
         }
       },
     }),
@@ -67,12 +55,11 @@ export const authOptions: NextAuthOptions = {
     signIn: "/api/auth/signin", // Custom Sign In Page
   },
   callbacks: {
-    async signIn({ user, credentials }) {
-      console.log("sign 1   ");
+    async signIn({ user }) {
+      console.log("sign 1");
       console.log(user);
-      console.log(credentials);
-      // @ts-ignore
-      const userData = user.data.user;
+      const authUser = user as AuthResponse;
+      const userData = authUser.data.user;
       if (user) {
         user.id = userData.id;
         user.name = userData.name;
@@ -86,8 +73,8 @@ export const authOptions: NextAuthOptions = {
       console.log(user);
       console.log("jwt jwt");
       if (user) {
-        // @ts-ignore
-        token.jwt = user?.data?.token;
+        const authUser = user as AuthResponse;
+        token.jwt = authUser?.data?.token;
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
@@ -95,11 +82,11 @@ export const authOptions: NextAuthOptions = {
       console.log(" token ", token);
       return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
+    async session({ session, token }) {
       if (token) {
-        session.token = token.jwt;
-        session.iat = token.iat;
-        session.exp = token.exp;
+        (session as Session).token = token.jwt as string;
+        (session as Session).iat = token.iat;
+        (session as Session).exp = token.exp;
       }
       console.log(session);
       return session;

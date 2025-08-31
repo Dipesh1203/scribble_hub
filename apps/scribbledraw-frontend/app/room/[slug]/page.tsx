@@ -1,7 +1,6 @@
 "use client";
 import React, { use, useEffect, useState } from "react";
 import axios from "axios";
-import ChatRoom from "../../../components/ChatRoom";
 import { BACKEND_URL } from "@repo/common/server";
 
 const ChatRoom1 = ({ params }: { params: Promise<{ slug: string }> }) => {

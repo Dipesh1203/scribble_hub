@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { CreateRoomResponse, GetRoomResponse, AuthRequest, ErrorResponse } from "@repo/common/types";
+import { CreateRoomResponse, GetRoomResponse, ErrorResponse } from "@repo/common/types";
 import { prismaClient } from "@repo/db/client";
 import { generateRoomID } from "../utils/helper";
+import { AuthRequest } from "../types";
 
 export const createRoom = async (req: AuthRequest, res: Response<CreateRoomResponse | ErrorResponse>) => {
   const userId = req.userId;
