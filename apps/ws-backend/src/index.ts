@@ -23,7 +23,7 @@ function checkUser(token: string): string | null {
       return null;
     }
     return decoded.userId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -67,11 +67,9 @@ wss.on("connection", function connection(ws, request) {
     if (parsedData.type === "chat") {
       console.log("reached", parsedData);
       const roomId = parsedData.roomId;
-      // const id = parsedData.id;
       const message = parsedData.message;
-      const id = message.charId;
       console.log("data ", roomId, message);
-      let data = await prismaClient.chat.create({
+      const data = await prismaClient.chat.create({
         data: {
           roomId: Number(roomId),
           message,

@@ -2,7 +2,7 @@
 import { useSession } from "next-auth/react";
 import React from "react";
 
-const page = () => {
+const CheckPage = () => {
   const { data: session, status } = useSession();
 
   if (status === "authenticated") {
@@ -12,4 +12,4 @@ const page = () => {
   return <a href="/signin">Sign in</a>;
 };
 
-export default page;
+export default CheckPage;

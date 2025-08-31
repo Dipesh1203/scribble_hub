@@ -31,14 +31,15 @@ export const signup = async (req: Request, res: Response) => {
     res.status(201).json({
       data: { userId: user.id, name: user.name, email: user.email },
     });
-  } catch (e: any) {
+  } catch (error: unknown) {
+    const e = error as { code?: string; meta?: { target?: string[] } };
     if (e.code === "P2002" && e.meta?.target?.includes("email")) {
       res.status(409).json({ message: "Email already registered" });
       return;
     }
     res
       .status(500)
-      .json({ message: typeof e === "string" ? e : (e as Error).message });
+      .json({ message: typeof error === "string" ? error : (error as Error).message });
   }
 };
 

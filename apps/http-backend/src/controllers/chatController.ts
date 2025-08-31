@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { prismaClient } from "@repo/db/client";
+import { GetChatsResponse } from "@repo/common/types";
 
-export const getChatsByRoomId = async (req: Request, res: Response) => {
+export const getChatsByRoomId = async (req: Request, res: Response<GetChatsResponse>) => {
   try {
     const roomId = Number(req.params.roomId);
     const messages = await prismaClient.chat.findMany({
@@ -10,7 +11,8 @@ export const getChatsByRoomId = async (req: Request, res: Response) => {
       take: 1000,
     });
     res.json({ messages });
-  } catch (e) {
+  } catch (error) {
+    console.error("Error fetching chats:", error);
     res.json({ messages: [] });
   }
 };

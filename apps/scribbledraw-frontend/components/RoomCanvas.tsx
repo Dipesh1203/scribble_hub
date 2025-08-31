@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 import { useSession } from "next-auth/react";
 import { WS_URL } from "@repo/common/server";
@@ -16,7 +16,7 @@ export interface Session extends DefaultSession {
 
 export function RoomCanvas({ roomId }: { roomId: string }) {
   const [socket, setSocket] = useState<WebSocket | null>();
-  const { data, status } = useSession();
+  const { data } = useSession();
   const session = data as Session;
   useEffect(() => {
     const ws = new WebSocket(
@@ -26,7 +26,6 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
     ws.onopen = () => {
       console.log("connect ws ..............");
       setSocket(ws);
-      console.log("connect ws ..............");
       ws.send(
         JSON.stringify({
           type: "join_room",
@@ -34,7 +33,7 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
         })
       );
     };
-  }, []);
+  }, [roomId, session]);
 
   if (!socket) {
     return <div>Connecting to Servers............</div>;
