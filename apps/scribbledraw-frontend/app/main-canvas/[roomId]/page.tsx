@@ -8,16 +8,6 @@ import React, { useRef, useState, useEffect, use, useCallback } from "react";
 import { Circle, Layer, Rect, Stage, Transformer } from "react-konva";
 // import { uuid } from "crypto";
 import { uuid } from "uuidv4";
-import { FloatingDock } from "@/components/ui/floating-dock";
-import {
-  IconBrandGithub,
-  IconBrandX,
-  IconExchange,
-  IconHome,
-  IconNewSection,
-  IconTerminal2,
-} from "@tabler/icons-react";
-import FloatingButton from "@/components/ProfileDropdown";
 import { ACTIONS } from "@/app/utils/toolbar";
 import { on } from "events";
 import ProfileDropdown from "@/components/ProfileDropdown";

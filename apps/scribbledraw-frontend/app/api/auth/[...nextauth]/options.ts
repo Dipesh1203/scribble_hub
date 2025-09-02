@@ -5,8 +5,7 @@ import {
   SigninSchema,
   CreateRoomSchema,
 } from "@repo/common/types";
-import { JWT_SECRET } from "@repo/backend-common/config";
-import { BACKEND_URL } from "@repo/common/server";
+import { BACKEND_URL, JWT_SECRET } from "@repo/common/server";
 
 interface userType {
   id: string;
