@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { JWT_SECRET } from "@repo/backend-common/config";
 import { CreateUserSchema, SigninSchema } from "@repo/common/types";
 import { prismaClient } from "@repo/db/client";
+import { JWT_SECRET } from "@repo/common/server";
 
 const saltRounds = 10;
 
@@ -56,6 +56,7 @@ export const signin = async (req: Request, res: Response) => {
       res.status(403).json({ message: "Not authorized" });
       return;
     }
+    console.log(JWT_SECRET);
     const token = jwt.sign({ userId: user?.id }, JWT_SECRET);
     res.json({ data: { token, user } });
   } catch (e) {

@@ -1,34 +1,22 @@
 "use client";
-import { BACKEND_URL, WS_URL } from "@repo/common/server";
-import axios from "axios";
-import { get } from "http";
-import { DefaultSession } from "next-auth";
 import { useSession } from "next-auth/react";
-import React, { useRef, useState, useEffect, use, useCallback } from "react";
-import { Circle, Layer, Rect, Stage, Transformer } from "react-konva";
-// import { uuid } from "crypto";
+import React, { useRef, useState, use, useEffect, useCallback } from "react";
+import { Stage, Layer, Transformer } from "react-konva";
 import { uuid } from "uuidv4";
-import { FloatingDock } from "@/components/ui/floating-dock";
-import {
-  IconBrandGithub,
-  IconBrandX,
-  IconExchange,
-  IconHome,
-  IconNewSection,
-  IconTerminal2,
-} from "@tabler/icons-react";
-import FloatingButton from "@/components/ProfileDropdown";
 import { ACTIONS } from "@/app/utils/toolbar";
-import { on } from "events";
-import ProfileDropdown from "@/components/ProfileDropdown";
-// import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { useRouter } from "next/navigation";
+import MainStage from "@/components/canvas/MainStage";
+import Toolbar from "@/components/canvas/Toolbar";
+import ZoomControls from "@/components/canvas/ZoomControls";
+import { useWebSocket } from "@/app/hooks/useWebSocket";
+import { useCanvasState } from "@/app/hooks/useCanvasState";
 import { Rectangle } from "@/components/konva-shapes/Rectangle";
 import { CircleShape } from "@/components/konva-shapes/CircleShape";
 import { ScribbleDraw } from "@/components/konva-shapes/ScribbleDraw";
-import { generateShapes } from "@/app/hooks/ShapeGenerator";
-import { HelpCircle, Settings, User } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+
+import { BACKEND_URL, WS_URL } from "@repo/common/server";
+import { DefaultSession } from "next-auth";
+import axios from "axios";
 
 export interface Session extends DefaultSession {
   user: {
@@ -39,7 +27,7 @@ export interface Session extends DefaultSession {
   exp?: number;
 }
 
-const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
+export default function MainCanvas({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = use(params);
   const router = useRouter()
   const stageRef = useRef<any>(null);
@@ -1553,22 +1541,3 @@ const Pages = ({ params }: { params: Promise<{ roomId: string }> }) => {
   );
 };
 
-const MenuItem = ({
-  icon,
-  label,
-  danger = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  danger?: boolean;
-}) => (
-  <button
-    className={`flex items-center px-4 py-2 text-sm gap-2 text-left hover:bg-gray-100 w-full ${danger ? "text-red-600" : "text-gray-700"
-      }`}
-  >
-    {/* {icon} */}
-    <span>{label}</span>
-  </button>
-);
-
-export default Pages;
