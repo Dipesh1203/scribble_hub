@@ -24,6 +24,9 @@ jobs:
           push: true
           tags: dipesh2009/scribble_hub-backend:${{ github.sha }}
       - run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
-          chmod 700 ~/ssh_key
-          ssh -o StrictHostKeyChecking=no -i ~/ssh_key ubuntu@ec2-43-205-238-106.ap-south-1.compute.amazonaws.com -t "docker stop backend_server && docker run --name backend_server -d -p 3000:3000 dipesh2009/scribble_hub-backend:${{ github.sha }}"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/ssh_key
+          chmod 600 ~/ssh_key
+          ssh -o StrictHostKeyChecking=no -i ~/ssh_key ubuntu@ec2-43-205-238-106.ap-south-1.compute.amazonaws.com -t "
+            docker stop backend_server 2>/dev/null || true
+            docker rm backend_server 2>/dev/null || true
+            docker run --name backend_server -d -p 3000:3000 dipesh2009/scribble_hub-backend:${{ github.sha }}"
