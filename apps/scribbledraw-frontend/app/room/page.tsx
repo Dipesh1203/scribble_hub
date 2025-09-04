@@ -114,7 +114,7 @@ export default function Home() {
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-light text-gray-800 mb-4">
-          Premium video meetings. Now free for everyone.
+          Premium Canvas meetings. Now free for everyone.
         </h1>
         <p className="text-lg text-gray-600 mb-8">
           We re-engineered the service we built for secure business meetings,
@@ -127,8 +127,8 @@ export default function Home() {
         {/* Create Room Card */}
         <div className="bg-white rounded-lg shadow-lg p-8 border">
           <div className="flex items-center mb-6">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-              <Video className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-sky-100 rounded-lg flex items-center justify-center mr-4">
+              <Video className="w-6 h-6 text-sky-600" />
             </div>
             <h2 className="text-2xl font-semibold text-gray-800">
               New meeting
@@ -138,7 +138,7 @@ export default function Home() {
           <div className="space-y-4">
             <button
               onClick={createRoomforLater}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+              className="w-full bg-sky-600 hover:bg-sky-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
             >
               {copied ? (
                 <>
@@ -160,7 +160,7 @@ export default function Home() {
             )}
             <button
               onClick={createRoom}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+              className="w-full bg-sky-600 hover:bg-sky-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
             >
               <Link2Icon className="w-5 h-5 mr-2" />
               Start an instant meeting
@@ -185,7 +185,7 @@ export default function Home() {
             </p>
             <button
               onClick={joinRoomWithCode}
-              className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+              className="w-full border-2 border-sky-600 text-sky-600 hover:bg-sky-50 font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
             >
               <Calendar className="w-5 h-5 mr-2" />
               Join with a code
@@ -257,8 +257,8 @@ export default function Home() {
                 className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <div className="flex items-center">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                    <Video className="w-4 h-4 text-blue-600" />
+                  <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center mr-3">
+                    <Video className="w-4 h-4 text-sky-600" />
                   </div>
                   <div>
                     <p className="font-medium text-gray-800">{room}</p>
@@ -268,7 +268,7 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-                <button className="text-blue-600 hover:text-blue-700 font-medium">
+                <button className="text-sky-600 hover:text-sky-700 font-medium">
                   Join
                 </button>
               </div>
@@ -288,7 +288,7 @@ export default function Home() {
           </h2>
           <button
             onClick={() => setIsEditingProfile(!isEditingProfile)}
-            className="flex items-center text-blue-600 hover:text-blue-700"
+            className="flex items-center text-sky-600 hover:text-sky-700"
           >
             <Edit3 className="w-4 h-4 mr-1" />
             {isEditingProfile ? "Cancel" : "Edit"}
@@ -307,7 +307,7 @@ export default function Home() {
                 />
               </div>
               {isEditingProfile && (
-                <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700">
+                <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-white hover:bg-sky-700">
                   <Camera className="w-4 h-4" />
                 </button>
               )}
@@ -331,7 +331,7 @@ export default function Home() {
                 value={profileName}
                 onChange={(e) => setProfileName(e.target.value)}
                 disabled={!isEditingProfile}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -344,7 +344,7 @@ export default function Home() {
                 value={profileEmail}
                 onChange={(e) => setProfileEmail(e.target.value)}
                 disabled={!isEditingProfile}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -352,7 +352,7 @@ export default function Home() {
               <div className="flex space-x-3 pt-4">
                 <button
                   onClick={updateProfile}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-6 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
                 >
                   Save Changes
                 </button>
@@ -389,7 +389,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => setNotifications(!notifications)}
-              className={`relative w-12 h-6 rounded-full transition-colors ${notifications ? "bg-blue-600" : "bg-gray-300"}`}
+              className={`relative w-12 h-6 rounded-full transition-colors ${notifications ? "bg-sky-600" : "bg-gray-300"}`}
             >
               <div
                 className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${notifications ? "translate-x-6" : "translate-x-0.5"}`}
@@ -404,7 +404,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`relative w-12 h-6 rounded-full transition-colors ${darkMode ? "bg-blue-600" : "bg-gray-300"}`}
+              className={`relative w-12 h-6 rounded-full transition-colors ${darkMode ? "bg-sky-600" : "bg-gray-300"}`}
             >
               <div
                 className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${darkMode ? "translate-x-6" : "translate-x-0.5"}`}
@@ -422,7 +422,7 @@ export default function Home() {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
             >
               <option value="English">English</option>
               <option value="Spanish">Spanish</option>
@@ -474,26 +474,12 @@ export default function Home() {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                {/* <Video className="w-5 h-5 text-white" /> */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  className="icon icon-tabler icons-tabler-outline icon-tabler-scribble"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path d="M3 15c2 3 4 4 7 4s7 -3 7 -7s-3 -7 -6 -7s-5 1.5 -5 4s2 5 6 5s8.408 -2.453 10 -5" />
-                </svg>
+              <div className="w-9 h-9 bg-sky-600 rounded-lg flex items-center justify-center mr-3">
+                <Palette className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold text-gray-800">
-                ScribbleHub
+              {/* CHANGE: Removed gradient from text for a cleaner look */}
+              <span className="text-2xl font-bold text-slate-900">
+                Scribblehub
               </span>
             </div>
 
@@ -502,7 +488,7 @@ export default function Home() {
               <button
                 onClick={() => setActiveTab("home")}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "home"
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-sky-100 text-sky-700"
                   : "text-gray-600 hover:text-gray-800"
                   }`}
               >
@@ -511,7 +497,7 @@ export default function Home() {
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "profile"
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-sky-100 text-sky-700"
                   : "text-gray-600 hover:text-gray-800"
                   }`}
               >
@@ -520,7 +506,7 @@ export default function Home() {
               <button
                 onClick={() => setActiveTab("settings")}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "settings"
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-sky-100 text-sky-700"
                   : "text-gray-600 hover:text-gray-800"
                   }`}
               >

@@ -100,7 +100,7 @@ export default function ScribbleDrawLandingProfessional() {
               </div>
               {/* CHANGE: Removed gradient from text for a cleaner look */}
               <span className="text-2xl font-bold text-slate-900">
-                ScribbleDraw
+                Scribblehub
               </span>
             </div>
 
