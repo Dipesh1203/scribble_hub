@@ -28,4 +28,4 @@ jobs:
           mkdir -p /home/runner/.ssh
           ls /home/runner/.ssh
           chmod 700 /home/runner/ssh_key
-          ssh -o StrictHostKeyChecking=no -i ~/ssh_key root@{{secrets.ROOT_IP}} -t "docker stop backend_server && docker run --name backend_server -d -p 3000:3000 dipesh2009/scribble_hub-backend:${{ github.sha }}"
+          ssh -o StrictHostKeyChecking=no -i ~/ssh_key ubuntu@{{secrets.ROOT_IP}} -t "docker stop backend_server && docker run --name backend_server -d -p 3000:3000 dipesh2009/scribble_hub-backend:${{ github.sha }}"
