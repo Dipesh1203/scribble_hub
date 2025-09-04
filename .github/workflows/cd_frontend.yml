@@ -35,7 +35,7 @@ jobs:
           mkdir -p /home/runner/.ssh
           ls /home/runner/.ssh
           chmod 700 /home/runner/ssh_key
-          ssh -o StrictHostKeyChecking=no -i ~/ssh_key ubuntu@{{secrets.ROOT_IP}} -t "docker stop scribble_frontend && docker run -d --name scribble-frontend -p 3003:3003 \
+          ssh -o StrictHostKeyChecking=no -i ~/ssh_key ubuntu@ec2-43-205-238-106.ap-south-1.compute.amazonaws.com -t "docker stop scribble_frontend && docker run -d --name scribble-frontend -p 3003:3003 \
             -e NEXT_PUBLIC_BACKEND_URL='${{ secrets.BACKEND_URL }}' \
             -e NEXT_PUBLIC_FRONTEND_URL='${{ secrets.FRONTEND_URL }}' \
             -e NEXT_PUBLIC_WS_URL='${{ secrets.WS_URL }}' \
