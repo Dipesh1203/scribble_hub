@@ -31,7 +31,9 @@ jobs:
           push: true
           tags: dipesh2009/scribble_hub-frontend:${{ github.sha }}
       - run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
+          echo "-----BEGIN OPENSSH PRIVATE KEY-----
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          -----END OPENSSH PRIVATE KEY-----" > ~/ssh_key
           mkdir -p /home/runner/.ssh
           ls /home/runner/.ssh
           chmod 700 /home/runner/ssh_key
