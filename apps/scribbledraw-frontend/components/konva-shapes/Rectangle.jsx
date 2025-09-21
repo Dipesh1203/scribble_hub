@@ -38,6 +38,7 @@ export const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
           const node = shapeRef.current;
           const scaleX = node.scaleX();
           const scaleY = node.scaleY();
+          const rotation = node.rotation(); // Get the rotation value
 
           // we will reset it back
           node.scaleX(1);
@@ -46,6 +47,7 @@ export const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
             ...shapeProps,
             x: node.x(),
             y: node.y(),
+            rotation: rotation, // Include rotation in the update
             // set minimal value
             width: Math.max(5, node.width() * scaleX),
             height: Math.max(node.height() * scaleY),

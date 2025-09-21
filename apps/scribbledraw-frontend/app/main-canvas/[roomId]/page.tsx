@@ -13,10 +13,13 @@ import { useCanvasState } from "@/app/hooks/useCanvasState";
 import { Rectangle } from "@/components/konva-shapes/Rectangle";
 import { CircleShape } from "@/components/konva-shapes/CircleShape";
 import { ScribbleDraw } from "@/components/konva-shapes/ScribbleDraw";
+import { TextShape } from "@/components/konva-shapes/TextShape";
 
 import { BACKEND_URL, WS_URL } from "@repo/common/server";
 import { DefaultSession } from "next-auth";
 import axios from "axios";
+import Link from "next/link";
+import { generateShapes } from "@/app/hooks/ShapeGenerator";
 
 export interface Session extends DefaultSession {
   user: {
@@ -35,6 +38,7 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
   const [socket, setSocket] = useState<WebSocket | null>();
   const [shapes, setShapes] = useState<any[]>([]);
   const [rectangles, setRectangles] = useState<any[]>([]);
+  const [text, setText] = useState<any[]>([]);
   const [circles, setCircles] = useState<any[]>([]);
   const [selectedColor, setSelectedColor] = useState<string>("black");
   const [selectedStrokeColor, setSelectedStrokeColor] =
@@ -70,9 +74,6 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   const [isGenerating, setIsGenrating] = useState<boolean>(false);
   const [prompt, setPrompt] = useState("");
-  if (!session) {
-    router.push("/signin")
-  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -120,6 +121,7 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
     );
     console.log("ws", ws);
     console.log("roomId", roomId);
+
     // Listen for messages from the server
     ws.onmessage = (event) => {
       try {
@@ -130,6 +132,10 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
             setCircles((prev) => [...prev, shape]);
           } else if (shape.width && shape.height) {
             setRectangles((prev) => [...prev, shape]);
+          } else if (shape.text) {
+            setText((prev) => [...prev, shape]);
+          } else if (shape.points) {
+            setScribbles((prev) => [...prev, shape]);
           }
         }
       } catch (err) {
@@ -224,8 +230,8 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
 
   useEffect(() => {
     console.log("ref change");
-    setShapes([...rectangles, ...circles, ...scribbles]);
-  }, [rectangles, circles, scribbles]);
+    setShapes([...rectangles, ...circles, ...scribbles, ...text]);
+  }, [rectangles, circles, scribbles, text]);
 
   const animateZoom = (
     fromScale: number,
@@ -455,13 +461,15 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
   };
 
   const zoomToFitAll = () => {
-    const allShapes = [...rectangles, ...circles];
+    const allShapes = [...rectangles, ...circles, ...text, ...scribbles];
     zoomToSelection(allShapes);
   };
 
   const handleStageMouseDown = (e: any) => {
+    console.log("Mouse down event, current action:", action);
     const stage = stageRef.current;
     const pointer = stage.getPointerPosition();
+    console.log("Stage pointer position:", pointer);
 
     // Handle canvas panning (Ctrl+click)
     if (isCtrlPressed) {
@@ -475,16 +483,16 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
 
     const relativePointer = stage.getRelativePointerPosition();
 
-    const id = uuid();
+    const newId = uuid();
     isPainting.current = true;
-    currentShapeId.current = id;
+    currentShapeId.current = newId;
 
     if (action === ACTIONS.RECTANGLE) {
       setRectangles((rects) => [
         ...rects,
         {
           type: "rectangle",
-          id,
+          id: newId,
           x: relativePointer.x,
           y: relativePointer.y,
           width: 0,
@@ -500,7 +508,7 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
         ...circle,
         {
           type: "circle",
-          id,
+          id: newId,
           x: relativePointer.x,
           y: relativePointer.y,
           fill: selectedColor,
@@ -513,13 +521,27 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
       setIsDrawing(true);
       const newScribble = {
         type: "scribble",
-        id,
+        id: newId,
         points: [relativePointer.x, relativePointer.y],
         color: selectedColor,
         strokeWidth: strokeWidth,
       };
       setCurrentScribble(newScribble);
       setScribbles((prev) => [...prev, newScribble]);
+    } else if (action === ACTIONS.TEXT) {
+      console.log("Creating new text at:", { x: relativePointer.x, y: relativePointer.y });
+      console.log("Current action is:", action, "Expected:", ACTIONS.TEXT);
+      const newText = {
+        type: "text",
+        id: newId,
+        x: relativePointer.x,
+        y: relativePointer.y,
+        text: "Double click to edit",
+        fontSize: 16,
+        fill: selectedColor,
+        draggable: true,
+      };
+      setText((prev) => [...prev, newText]);
     }
   };
 
@@ -531,6 +553,7 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
 
     const newCircles: any[] = [];
     const newRectangles: any[] = [];
+    const newText: any[] = [];
     const newScribbles: any[] = [];
 
     const shapesData = data
@@ -543,6 +566,9 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
             }
             if (shape.type === "rectangle" || (shape.width && shape.height)) {
               newRectangles.push({ ...shape, chatId: x?.id });
+            }
+            if (shape.type === "text" || (shape.text)) {
+              newText.push({ ...shape, chatId: x?.id });
             }
             if (shape.type === "scribble" || shape.points) {
               newScribbles.push({ ...shape, chatId: x?.id });
@@ -558,6 +584,7 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
 
     setCircles((prev) => [...prev, ...newCircles]);
     setRectangles((prev) => [...prev, ...newRectangles]);
+    setText((prev) => [...prev, ...newText]);
     setScribbles((prev) => [...prev, ...newScribbles]);
     console.log(shapesData);
     return shapesData;
@@ -650,6 +677,18 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
             : circ
         )
       );
+    } else if (action === ACTIONS.TEXT) {
+      const newText = {
+        type: "text",
+        id: uuid(),
+        x: relativePointer.x,
+        y: relativePointer.y,
+        text: "Double click to edit",
+        fontSize: 16,
+        fill: selectedColor,
+        draggable: true
+      };
+      setText((prev) => [...prev, newText]);
     } else if (action === ACTIONS.SCRIBBLE) {
       if (!currentScribble) {
         // Start a new scribble
@@ -706,7 +745,9 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
       const tempId = currentShapeId.current;
       let updatedShape =
         rectangles.find((x) => x.id === tempId) ||
-        circles.find((x) => x.id === tempId);
+        circles.find((x) => x.id === tempId) ||
+        text.find((x) => x.id === tempId) ||
+        scribbles.find((x) => x.id === tempId);
 
       console.log("updatedShape ", updatedShape);
 
@@ -820,6 +861,8 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
         setRectangles((prev) => prev.filter((rect) => rect.id !== shapeId));
       } else if (shapeToDelete.type === "circle") {
         setCircles((prev) => prev.filter((circ) => circ.id !== shapeId));
+      } else if (shapeToDelete.type === "text") {
+        setText((prev) => prev.filter((tt) => tt.id !== shapeId));
       } else if (shapeToDelete.type === "scribble") {
         setScribbles((prev) =>
           prev.filter((scribble) => scribble.id !== shapeId)
@@ -1171,7 +1214,11 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
           <path d="M4 4h16M12 4v16" />
         </svg>
       ),
-      onClick: () => setAction(ACTIONS.TEXT),
+      onClick: () => {
+        console.log("Text tool clicked");
+        setAction(ACTIONS.TEXT);
+        console.log("Action set to:", ACTIONS.TEXT);
+      },
     },
     {
       name: "eraser",
@@ -1306,11 +1353,11 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
       <div className="fixed top-6 left-16 z-50" ref={dropdownRef}>
         <button
           onClick={() => setOpen(!open)}
-          className="p-2 bg-white rounded-md  shadow-md hover:bg-gray-50"
-          aria-label="Open Profile Menu"
+          className="p-2.5 bg-white rounded-lg shadow-lg hover:bg-gray-50 transition-all duration-200 ease-in-out flex items-center gap-2 border border-gray-200"
+          aria-label="Open Menu"
         >
           <svg
-            className="w-6 h-6"
+            className="w-5 h-5 text-gray-600"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -1322,23 +1369,63 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
             <line x1="4" y1="12" x2="20" y2="12" />
             <line x1="4" y1="18" x2="20" y2="18" />
           </svg>
+          <span className="text-sm font-medium text-gray-700">Menu</span>
         </button>
 
         {open && (
-          <div className="z-49 mt-2 w-60 rounded-xl shadow-2xl border bg-white backdrop-blur-md">
-            <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDividerButton">
-              <li>
-                <Link href="/room" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Home</Link>
-              </li>
-              <li>
-                <Link href="/settings" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Settings</Link>
-              </li>
-              <li>
-                <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Profile</Link>
-              </li>
-            </ul>
-            <div className="py-2">
-              <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Separated link</a>
+          <div className="absolute left-0 mt-3 w-72 rounded-xl shadow-2xl border border-gray-200 bg-white/95 backdrop-blur-lg transform transition-all duration-200 ease-in-out">
+            <div className="p-4 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800">Canvas Menu</h3>
+              <p className="text-sm text-gray-500">Manage your canvas and settings</p>
+            </div>
+            <nav className="p-2">
+              <ul className="space-y-1">
+                <li>
+                  <Link
+                    href="/room"
+                    className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span className="font-medium">Home</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="font-medium">Settings</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span className="font-medium">Profile</span>
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+            <div className="p-4 mt-2 border-t border-gray-100">
+              <button
+                onClick={() => {/* Add logout logic here */ }}
+                className="w-full px-4 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200 flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Sign Out</span>
+              </button>
             </div>
           </div>
         )}
@@ -1348,7 +1435,7 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
       {/* OR add dedicated zoom toolbar */}
       <ZoomToolbar />
       {/* Floating Controls */}
-      <div className="z-45 fixed bottom-6 absolute bottom-6 right-6 bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+      <div className="z-45 fixed bottom-6 right-6 bg-white rounded-lg shadow-lg p-4 border border-gray-200">
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
@@ -1394,17 +1481,17 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
         ref={stageRef}
         width={size.width}
         height={size.height - 64}
-        x={stagePos.x} // ADD THIS LINE
-        y={stagePos.y} // ADD THIS LINE
+        x={stagePos.x}
+        y={stagePos.y}
         onMouseDown={handleStageMouseDown}
         onMouseMove={handleStageMouseMove}
         onMouseUp={handleStageMouseUp}
-        scaleX={stageScale} // ADD THIS
+        scaleX={stageScale}
         scaleY={stageScale}
         onWheel={handleWheel}
         onMouseLeave={() => {
           isDragging.current = false;
-          isPainting.current = false; // Also reset painting
+          isPainting.current = false;
         }}
         style={{
           background: "#fff",
@@ -1450,6 +1537,37 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
                 />
               )
           )}
+          {text.map((tt) => {
+            if (!tt || !tt.id) return null;
+
+            return (
+              <TextShape
+                key={tt.id + uuid()}
+                shapeProps={tt}
+                isSelected={tt.id === selected}
+                onSelect={() => {
+                  if (ACTIONS.DELETE === action) {
+                    permanentDeleteShape(tt.id);
+                    return;
+                  }
+                  setSelected(tt.id);
+                }}
+                onChange={(newAttrs: any) => {
+                  console.log("newAttrs", newAttrs);
+                  const updatedAttrs = {
+                    ...tt, // Keep original properties
+                    ...newAttrs, // Apply new changes
+                    id: tt.id, // Ensure id is preserved
+                  };
+                  const updateText = text.map((r) =>
+                    r.id === tt.id ? updatedAttrs : r
+                  );
+                  setText(updateText);
+                  updateShape(socket, updatedAttrs, roomId);
+                }}
+              />
+            );
+          })}
           {circles.map(
             (circle) =>
               circle && (

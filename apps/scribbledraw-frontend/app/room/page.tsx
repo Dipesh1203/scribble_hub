@@ -27,6 +27,7 @@ import { useSession } from "next-auth/react";
 import { Session } from "../api/auth/[...nextauth]/options";
 import axios from "axios";
 import { getRoomid, getRoomidFromSlug } from "../actions/room";
+import { getUserRooms } from "../actions/getUserRooms";
 
 // Mock session data for demo
 const mockSession = {
@@ -57,6 +58,8 @@ export default function Home() {
   const [language, setLanguage] = useState("English");
   const [roomIdLater, setRoomIdLater] = useState("");
   const [copied, setCopied] = useState(false);
+  const [userRooms, setUserRooms] = useState<Array<{ id: number, slug: string, createdAt: string }>>([]);
+  const [isLoadingRooms, setIsLoadingRooms] = useState(true);
 
   console.log("Session data:", data, status);
   // if (!session) {
@@ -65,7 +68,22 @@ export default function Home() {
   useEffect(() => {
     if (!token) {
       router.push("/signin");
+      return;
     }
+
+    const fetchRooms = async () => {
+      setIsLoadingRooms(true);
+      try {
+        const rooms = await getUserRooms(token);
+        setUserRooms(rooms);
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      } finally {
+        setIsLoadingRooms(false);
+      }
+    };
+
+    fetchRooms();
   }, [token]);
 
   const createRoom = async () => {
@@ -246,33 +264,57 @@ export default function Home() {
 
       {/* Recent Rooms */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">
-          Recent rooms
-        </h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold text-gray-800">
+            Recent rooms
+          </h3>
+          <button
+            onClick={() => router.push('/rooms')}
+            className="text-sky-600 hover:text-sky-700 text-sm font-medium"
+          >
+            View all
+          </button>
+        </div>
         <div className="space-y-3">
-          {["Design Review", "Team Standup", "Client Presentation"].map(
-            (room, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center mr-3">
-                    <Video className="w-4 h-4 text-sky-600" />
+          {isLoadingRooms ? (
+            <div className="text-center py-4 text-gray-600">Loading rooms...</div>
+          ) : userRooms.length === 0 ? (
+            <div className="text-center py-4 text-gray-600">No rooms found</div>
+          ) : (
+            userRooms.slice(0, 5).map((room) => {
+              const createdDate = new Date(room.createdAt);
+              const daysAgo = Math.floor((new Date().getTime() - createdDate.getTime()) / (1000 * 3600 * 24));
+
+              return (
+                <div
+                  key={room.id}
+                  className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center mr-3">
+                      <Video className="w-4 h-4 text-sky-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">Room {room.id}</p>
+                      <p className="text-sm text-gray-600">
+                        <Clock className="w-3 h-3 inline mr-1" />
+                        {daysAgo === 0
+                          ? 'Today'
+                          : daysAgo === 1
+                            ? 'Yesterday'
+                            : `${daysAgo} days ago`}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-800">{room}</p>
-                    <p className="text-sm text-gray-600">
-                      <Clock className="w-3 h-3 inline mr-1" />
-                      {index + 1} day{index === 0 ? "" : "s"} ago
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => router.push(`/main-canvas/${room.id}`)}
+                    className="text-sky-600 hover:text-sky-700 font-medium"
+                  >
+                    Join
+                  </button>
                 </div>
-                <button className="text-sky-600 hover:text-sky-700 font-medium">
-                  Join
-                </button>
-              </div>
-            )
+              );
+            })
           )}
         </div>
       </div>

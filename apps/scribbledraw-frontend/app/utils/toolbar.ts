@@ -1,0 +1,9 @@
+export const ACTIONS = {
+  SELECT: "SELECT",
+  RECTANGLE: "RECTANGLE",
+  CIRCLE: "CIRCLE",
+  SCRIBBLE: "SCRIBBLE",
+  TEXT: "TEXT",
+  DELETE: "DELETE",
+  ARROW: "ARROW",
+} as const;

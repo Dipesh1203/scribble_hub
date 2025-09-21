@@ -6,18 +6,15 @@ import { generateRoomID } from "../utils/helper";
 export const createRoom = async (req: Request, res: Response) => {
   // @ts-ignore: TODO: Fix this
   const userId = req.userId;
-  console.log("===============");
 
   try {
     const newRoomId = generateRoomID();
-    console.log(newRoomId + " ===========");
     const room = await prismaClient.room.create({
       data: {
         slug: newRoomId,
         adminId: userId,
       },
     });
-    console.log(room);
 
     res.json({
       roomId: room.slug,
@@ -33,4 +30,28 @@ export const getRoomBySlug = async (req: Request, res: Response) => {
   const slug = req.params.slug;
   const room = await prismaClient.room.findFirst({ where: { slug } });
   res.json({ room });
+};
+
+export const getUserRooms = async (req: Request, res: Response) => {
+  try {
+    // @ts-ignore: TODO: Fix this
+    const userId = req.userId;
+
+    const rooms = await prismaClient.room.findMany({
+      where: {
+        adminId: userId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    res.json({
+      rooms,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching user rooms",
+    });
+  }
 };
