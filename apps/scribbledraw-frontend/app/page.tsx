@@ -102,6 +102,7 @@ export default function ScribbleDrawLandingProfessional() {
               <span className="text-2xl font-bold text-slate-900">
                 Scribblehub
               </span>
+
             </div>
 
             {/* Desktop Navigation */}
