@@ -27,6 +27,6 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/ssh_key
           chmod 600 ~/ssh_key
           ssh -o StrictHostKeyChecking=no -i ~/ssh_key ${{ secrets.EC2_HOST }} -t "
-            docker stop backend_server 2>/dev/null || true
-            docker rm backend_server 2>/dev/null || true
-            docker run --name backend_server -d -p 3000:3000 dipesh2009/scribble_hub-backend:${{ github.sha }}"
+            sudo docker stop backend_server 2>/dev/null || true
+            sudo docker rm backend_server 2>/dev/null || true
+            sudo docker run --name backend_server -d -p 3000:3000 dipesh2009/scribble_hub-backend:${{ github.sha }}"
