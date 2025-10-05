@@ -39,6 +39,9 @@ Scribble Hub is a modern collaborative drawing platform that allows multiple use
 - **Build System**: Turborepo
 - **Container**: Docker
 
+## Architecture Diagram
+<img width="1347" height="667" alt="image" src="https://github.com/user-attachments/assets/0c78bb0d-cdd9-4541-86dd-42c6a35ad452" />
+
 ## Getting Started
 
 ### Prerequisites
