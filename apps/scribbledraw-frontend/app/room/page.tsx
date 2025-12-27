@@ -27,7 +27,7 @@ import { useSession } from "next-auth/react";
 import { Session } from "../api/auth/[...nextauth]/options";
 import axios from "axios";
 import { getRoomid, getRoomidFromSlug } from "../actions/room";
-import { getUserRooms } from "../actions/getUserRooms";
+import { getUserRooms, updateUser } from "../actions/getUserRooms";
 
 // Mock session data for demo
 const mockSession = {
@@ -50,8 +50,9 @@ export default function Home() {
   const router = useRouter();
   const token = session?.token;
   // Profile update states
-  const [profileName, setProfileName] = useState(mockSession.user.name);
-  const [profileEmail, setProfileEmail] = useState(mockSession.user.email);
+  const [profileName, setProfileName] = useState<string>(session.user.name || "");
+  const [profileEmail, setProfileEmail] = useState<string>(session.user.email || "");
+  const [profilePhoto, setProfilePhoto] = useState<string>(session.user.image || mockSession.user.image);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
@@ -61,7 +62,6 @@ export default function Home() {
   const [userRooms, setUserRooms] = useState<Array<{ id: number, slug: string, createdAt: string }>>([]);
   const [isLoadingRooms, setIsLoadingRooms] = useState(true);
 
-  console.log("Session data:", data, status);
   // if (!session) {
   //   router.push("/signin")
   // }
@@ -89,9 +89,7 @@ export default function Home() {
   const createRoom = async () => {
     try {
       const slug = await getRoomid(token);
-      console.log("slug ", slug.roomId)
       const roomId = await getRoomidFromSlug(slug.roomId, token);
-      console.log(roomId)
       if (roomId.room.id) {
         router.push(`/main-canvas/${roomId.room.id}`);
       }
@@ -101,10 +99,7 @@ export default function Home() {
   };
   const createRoomforLater = async () => {
     try {
-      console.log("clicked")
-      console.log(token)
       const res = await getRoomid(token);
-      console.log(res)
       setRoomIdLater(res.roomId);
     } catch (error) {
       console.error("Error creating room", error);
@@ -114,17 +109,38 @@ export default function Home() {
   const joinRoomWithCode = async () => {
     const slug = prompt("Enter room code:") || "";
     const roomId = await getRoomidFromSlug(slug, token);
-    console.log(roomId)
     if (roomId.room.id) {
       router.push(`/main-canvas/${roomId.room.id}`);
     }
   };
 
   const updateProfile = () => {
-    // Mock profile update
-    console.log("Updating profile:", { profileName, profileEmail });
-    setIsEditingProfile(false);
-    alert("Profile updated successfully!");
+    // Update profile on server
+    (async () => {
+      try {
+        const nameToSend = profileName?.trim() || "User";
+        const emailToSend = profileEmail?.trim() || "user@example.com";
+        const photoToSend = profilePhoto?.trim() || `https://ui-avatars.com/api/?name=${encodeURIComponent(nameToSend)}`;
+
+        const res = await updateUser(token, nameToSend, emailToSend, photoToSend);
+
+
+        if (res.data?.user) {
+          const u = res.data.user;
+          setProfileName(u.name || nameToSend);
+          setProfileEmail(u.email || emailToSend);
+          setProfilePhoto(u.photo || photoToSend);
+          setIsEditingProfile(false);
+          alert("Profile updated successfully!");
+        } else {
+          console.error("Unexpected response", res.data);
+          alert("Failed to update profile");
+        }
+      } catch (err) {
+        console.error("updateProfile error", err);
+        alert("Failed to update profile");
+      }
+    })();
   };
 
   const renderHomeContent = () => (
@@ -222,7 +238,7 @@ export default function Home() {
             <div className="relative">
               <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden">
                 <img
-                  src={mockSession.user.image}
+                  src={profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName)}`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -230,10 +246,8 @@ export default function Home() {
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
             <div>
-              <p className="font-medium text-gray-800">
-                {mockSession.user.name}
-              </p>
-              <p className="text-sm text-gray-600">{mockSession.user.email}</p>
+              <p className="font-medium text-gray-800">{profileName}</p>
+              <p className="text-sm text-gray-600">{profileEmail}</p>
             </div>
           </div>
 
@@ -343,7 +357,7 @@ export default function Home() {
             <div className="relative">
               <div className="w-20 h-20 bg-gray-200 rounded-full overflow-hidden">
                 <img
-                  src={mockSession.user.image}
+                  src={profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName)}`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -389,6 +403,20 @@ export default function Home() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
+
+            {isEditingProfile && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Photo URL
+                </label>
+                <input
+                  type="text"
+                  value={profilePhoto}
+                  onChange={(e) => setProfilePhoto(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            )}
 
             {isEditingProfile && (
               <div className="flex space-x-3 pt-4">
@@ -565,7 +593,7 @@ export default function Home() {
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
                   <img
-                    src={mockSession.user.image}
+                    src={profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName)}`}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />

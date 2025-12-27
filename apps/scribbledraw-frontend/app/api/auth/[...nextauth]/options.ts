@@ -41,8 +41,6 @@ export const authOptions: NextAuthOptions = {
         credentials: { username: string; password: string } | undefined
       ): Promise<any> {
         try {
-          console.log(BACKEND_URL);
-          console.log("credentials ", credentials);
           const res = await fetch(`${BACKEND_URL}/api/signin`, {
             method: "POST",
             body: JSON.stringify(credentials),
@@ -52,11 +50,9 @@ export const authOptions: NextAuthOptions = {
 
           if (!res.ok || !user?.data?.token) {
             return null;
-            // throw new Error("No user found Authentication failed");
           }
           return user;
         } catch (error: any) {
-          console.log("eadsfasdfas");
           throw new Error(error.message || "Authentication failed");
         }
       },
@@ -67,9 +63,6 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, credentials }) {
-      console.log("sign 1   ");
-      console.log(user);
-      console.log(credentials);
       // @ts-ignore
       const userData = user.data.user;
       if (user) {
@@ -81,9 +74,6 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user }) {
-      console.log("jwt jwt 1");
-      console.log(user);
-      console.log("jwt jwt");
       if (user) {
         // @ts-ignore
         token.jwt = user?.data?.token;
@@ -91,7 +81,6 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.email = user.email;
       }
-      console.log(" token ", token);
       return token;
     },
     async session({ session, token }: { session: any; token: any }) {
@@ -100,7 +89,6 @@ export const authOptions: NextAuthOptions = {
         session.iat = token.iat;
         session.exp = token.exp;
       }
-      console.log(session);
       return session;
     },
   },

@@ -25,9 +25,8 @@ export default function ProfileDropdown() {
             <Menu.Item>
               {({ active }) => (
                 <button
-                  className={`${
-                    active ? "bg-gray-100" : ""
-                  } w-full px-4 py-2 text-sm text-gray-700 text-left`}
+                  className={`${active ? "bg-gray-100" : ""
+                    } w-full px-4 py-2 text-sm text-gray-700 text-left`}
                   onClick={() => console.log("Profile")}
                 >
                   Profile
@@ -37,9 +36,8 @@ export default function ProfileDropdown() {
             <Menu.Item>
               {({ active }) => (
                 <button
-                  className={`${
-                    active ? "bg-gray-100" : ""
-                  } w-full px-4 py-2 text-sm text-gray-700 text-left`}
+                  className={`${active ? "bg-gray-100" : ""
+                    } w-full px-4 py-2 text-sm text-gray-700 text-left`}
                   onClick={() => console.log("Settings")}
                 >
                   Settings
@@ -49,9 +47,8 @@ export default function ProfileDropdown() {
             <Menu.Item>
               {({ active }) => (
                 <button
-                  className={`${
-                    active ? "bg-gray-100" : ""
-                  } w-full px-4 py-2 text-sm text-red-600 text-left`}
+                  className={`${active ? "bg-gray-100" : ""
+                    } w-full px-4 py-2 text-sm text-red-600 text-left`}
                   onClick={() => signOut()}
                 >
                   Logout

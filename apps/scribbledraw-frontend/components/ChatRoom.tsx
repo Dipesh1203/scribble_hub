@@ -12,7 +12,6 @@ const ChatRoom = ({ id }: { id: string }) => {
   useEffect(() => {
     async function fetchChats() {
       try {
-        console.log("Fetching messages for room:", id);
         const response = await axios.get(`${BACKEND_URL}/api/chats/${id}`);
         setMessages(response.data.messages);
       } catch (error) {

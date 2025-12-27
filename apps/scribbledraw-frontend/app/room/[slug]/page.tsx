@@ -11,7 +11,6 @@ const ChatRoom1 = ({ params }: { params: Promise<{ slug: string }> }) => {
   useEffect(() => {
     async function fetchRoom() {
       try {
-        console.log("Fetching room for slug:", slug);
         const response = await axios.get(`${BACKEND_URL}/api/room/${slug}`);
         setRoomId(response.data?.room?.id);
       } catch (error) {

@@ -4,7 +4,6 @@ import { Stage, Layer, Rect, Transformer } from "react-konva";
 export const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
   const shapeRef = React.useRef();
   const trRef = React.useRef();
-  // console.log("Rectangle shapeProps", shapeProps);
   React.useEffect(() => {
     if (isSelected) {
       // we need to attach transformer manually

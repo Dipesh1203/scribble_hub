@@ -1,4 +1,5 @@
 import { BACKEND_URL } from "@repo/common/server";
+import axios from "axios";
 
 export const getUserRooms = async (token: string) => {
   try {
@@ -17,5 +18,24 @@ export const getUserRooms = async (token: string) => {
   } catch (error) {
     console.error("Error fetching rooms:", error);
     return [];
+  }
+};
+
+export const updateUser = async (
+  token: string | undefined,
+  nameToSend: string,
+  emailToSend: string,
+  photoToSend: string
+) => {
+  try {
+    const res = await axios.put(
+      `${BACKEND_URL}/api/user`,
+      { name: nameToSend, email: emailToSend, photo: photoToSend },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("Error Updating users:", error);
+    return { error: error };
   }
 };

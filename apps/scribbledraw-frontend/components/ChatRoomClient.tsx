@@ -26,14 +26,11 @@ export function ChatRoomClient({
       socket.onmessage = (event) => {
         const parsedData = JSON.parse(event.data);
         if (parsedData.type === "chat") {
-          console.log("chat");
           setChats((c) => [...c, parsedData.message]);
         }
       };
     }
   }, [socket, loading, id]);
-  console.log(" messages ", messages);
-  console.log(" chats ", chats);
   return (
     <div>
       <input

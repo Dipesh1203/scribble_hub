@@ -52,7 +52,6 @@ export async function initDraw(
     // startY = coords.y;
     startX = e.clientX;
     startY = e.clientY;
-    console.log(coords.x, coords.y);
   });
 
   canvas.addEventListener("mouseup", (e) => {

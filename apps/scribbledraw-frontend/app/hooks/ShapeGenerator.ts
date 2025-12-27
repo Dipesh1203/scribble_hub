@@ -38,8 +38,6 @@ export const generateShapes = async (
 
     const data = await response.json();
 
-    console.log("data ai", data);
-
     if (!response.ok) {
       throw new Error(data.error || "Failed to generate shape");
     }
@@ -51,7 +49,6 @@ export const generateShapes = async (
 
     const newShapes = JSON.parse(cleanedStr);
     newShapes.map((shape: any) => (shape.id = uuid()));
-    console.log("send");
     newShapes.map((shape: any) => send(socket, shape, roomId));
   } catch (err) {
     // setError(err.message);

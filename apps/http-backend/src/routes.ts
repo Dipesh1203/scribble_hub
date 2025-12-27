@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { signup, signin } from "./controllers/authController";
+import { signup, signin, updateProfile } from "./controllers/authController";
 import {
   createRoom,
   getRoomBySlug,
@@ -12,6 +12,7 @@ const router: Router = express.Router();
 
 router.post("/api/signup", signup);
 router.post("/api/signin", signin);
+router.put("/api/user", middleware, updateProfile);
 router.post("/api/room", middleware, createRoom);
 router.get("/api/chats/:roomId", getChatsByRoomId);
 router.get("/api/room/:slug", getRoomBySlug);

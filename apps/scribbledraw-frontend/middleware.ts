@@ -6,7 +6,6 @@ export { default } from "next-auth/middleware";
 // Middleware to handle authentication and route redirection
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
-  console.log("middleware token", token);
   const { pathname } = request.nextUrl;
 
   // Redirect authenticated users away from login/signup pages

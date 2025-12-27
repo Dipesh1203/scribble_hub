@@ -56,10 +56,62 @@ export const signin = async (req: Request, res: Response) => {
       res.status(403).json({ message: "Not authorized" });
       return;
     }
-    console.log(JWT_SECRET);
     const token = jwt.sign({ userId: user?.id }, JWT_SECRET);
     res.json({ data: { token, user } });
   } catch (e) {
     res.status(500).json({ message: { e } });
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    // @ts-ignore
+    const userId: string = req.userId;
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const { name, email, photo } = req.body;
+
+    // Basic validation / defaults
+    const newName =
+      typeof name === "string" && name.trim() ? name.trim() : undefined;
+    const newEmail =
+      typeof email === "string" && email.trim() ? email.trim() : undefined;
+    const newPhoto =
+      typeof photo === "string" && photo.trim() ? photo.trim() : undefined;
+
+    // If no update fields provided, return bad request
+    if (!newName && !newEmail && !newPhoto) {
+      res.status(400).json({ message: "No fields to update" });
+      return;
+    }
+
+    // If updating email, ensure it's not already used by another user
+    if (newEmail) {
+      const existing = await prismaClient.user.findUnique({
+        where: { email: newEmail },
+      });
+      if (existing && existing.id !== userId) {
+        res.status(409).json({ message: "Email already in use" });
+        return;
+      }
+    }
+
+    const updated = await prismaClient.user.update({
+      where: { id: userId },
+      data: {
+        ...(newName ? { name: newName } : {}),
+        ...(newEmail ? { email: newEmail } : {}),
+        ...(newPhoto ? { photo: newPhoto } : {}),
+      },
+    });
+    res.json({ data: { user: updated } });
+    return;
+  } catch (e: any) {
+    console.error("updateProfile error", e);
+    res.status(500).json({ message: e?.message ?? "Internal error" });
+    return;
   }
 };
