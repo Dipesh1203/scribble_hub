@@ -1,4 +1,5 @@
 {
-  "buildCommand": "cd apps/scribbledraw-frontend && pnpm install && pnpm run build",
-  "outputDirectory": "apps/scribbledraw-frontend/.next"
+  "buildCommand": "pnpm install && pnpm --filter=scribbledraw-frontend run build",
+  "outputDirectory": "apps/scribbledraw-frontend/.next",
+  "framework": "nextjs"
 }
