@@ -1,0 +1,4 @@
+{
+  "buildCommand": "cd apps/scribbledraw-frontend && pnpm install && pnpm run build",
+  "outputDirectory": "apps/scribbledraw-frontend/.next"
+}
