@@ -1,7 +1,0 @@
-pnpm-lock.yaml
-docker/
-docker-compose.yml
-docker-compose.prod.yml
-apps/http-backend
-apps/ws-backend
-packages
