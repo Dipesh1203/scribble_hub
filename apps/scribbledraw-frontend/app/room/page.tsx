@@ -50,9 +50,9 @@ export default function Home() {
   const router = useRouter();
   const token = session?.token;
   // Profile update states
-  const [profileName, setProfileName] = useState<string>(session.user.name || "");
-  const [profileEmail, setProfileEmail] = useState<string>(session.user.email || "");
-  const [profilePhoto, setProfilePhoto] = useState<string>(session.user.image || mockSession.user.image);
+  const [profileName, setProfileName] = useState<string>(session?.user?.name || "");
+  const [profileEmail, setProfileEmail] = useState<string>(session?.user?.email || "");
+  const [profilePhoto, setProfilePhoto] = useState<string>(session?.user?.image || mockSession.user.image);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
@@ -70,6 +70,8 @@ export default function Home() {
       router.push("/signin");
       return;
     }
+    console.log("Token ", token);
+    console.log("Token ", session);
 
     const fetchRooms = async () => {
       setIsLoadingRooms(true);
@@ -600,7 +602,7 @@ export default function Home() {
                 </div>
                 <div className="hidden sm:block text-right">
                   <p className="text-sm font-medium text-gray-800">
-                    {mockSession.user.name}
+                    {session?.user?.name}
                   </p>
                 </div>
               </div>
