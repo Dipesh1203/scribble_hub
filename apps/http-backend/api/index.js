@@ -5658,6 +5658,10 @@ var require_client = __commonJS({
             "fromEnvVar": null,
             "value": "windows",
             "native": true
+          },
+          {
+            "fromEnvVar": null,
+            "value": "rhel-openssl-3.0.x"
           }
         ],
         "previewFeatures": [],
@@ -5684,8 +5688,8 @@ var require_client = __commonJS({
           }
         }
       },
-      "inlineSchema": 'generator client {\n  provider = "prisma-client-js"\n  output   = "../src/generated/client"\n}\n\ndatasource db {\n  provider = "postgresql"\n  url      = env("DATABASE_URL")\n}\n\nmodel User {\n  id          String       @id @default(uuid())\n  email       String       @unique @db.VarChar(255)\n  password    String\n  name        String\n  photo       String?\n  chats       Chat[]\n  rooms       Room[]\n  normalChats NormalChat[]\n}\n\nmodel Room {\n  id          Int          @id @default(autoincrement())\n  slug        String       @unique\n  createdAt   DateTime     @default(now())\n  adminId     String\n  chats       Chat[]\n  normalChats NormalChat[]\n  admin       User         @relation(fields: [adminId], references: [id])\n}\n\nmodel Chat {\n  id      Int    @id @default(autoincrement())\n  roomId  Int\n  message Json\n  userId  String\n  room    Room   @relation(fields: [roomId], references: [id])\n  user    User   @relation(fields: [userId], references: [id])\n}\n\nmodel NormalChat {\n  id      Int    @id @default(autoincrement())\n  roomId  Int\n  message String\n  userId  String\n  room    Room   @relation(fields: [roomId], references: [id])\n  user    User   @relation(fields: [userId], references: [id])\n}\n',
-      "inlineSchemaHash": "24fd9f96da8110880837d4bda7099758aa8457c3cd9b2fb735d82023001d356d",
+      "inlineSchema": 'generator client {\n  provider      = "prisma-client-js"\n  output        = "../src/generated/client"\n  binaryTargets = ["native", "rhel-openssl-3.0.x"]\n}\n\ndatasource db {\n  provider = "postgresql"\n  url      = env("DATABASE_URL")\n}\n\nmodel User {\n  id          String       @id @default(uuid())\n  email       String       @unique @db.VarChar(255)\n  password    String\n  name        String\n  photo       String?\n  chats       Chat[]\n  rooms       Room[]\n  normalChats NormalChat[]\n}\n\nmodel Room {\n  id          Int          @id @default(autoincrement())\n  slug        String       @unique\n  createdAt   DateTime     @default(now())\n  adminId     String\n  chats       Chat[]\n  normalChats NormalChat[]\n  admin       User         @relation(fields: [adminId], references: [id])\n}\n\nmodel Chat {\n  id      Int    @id @default(autoincrement())\n  roomId  Int\n  message Json\n  userId  String\n  room    Room   @relation(fields: [roomId], references: [id])\n  user    User   @relation(fields: [userId], references: [id])\n}\n\nmodel NormalChat {\n  id      Int    @id @default(autoincrement())\n  roomId  Int\n  message String\n  userId  String\n  room    Room   @relation(fields: [roomId], references: [id])\n  user    User   @relation(fields: [userId], references: [id])\n}\n',
+      "inlineSchemaHash": "1c8d3241bb302252b80878edb50122cce3f9bf9a1c8449597d18d5735a5dcb67",
       "copyEngine": true
     };
     var fs2 = require("fs");
@@ -5715,6 +5719,8 @@ var require_client = __commonJS({
     Object.assign(exports2, Prisma);
     path.join(__dirname, "query_engine-windows.dll.node");
     path.join(process.cwd(), "src/generated/client/query_engine-windows.dll.node");
+    path.join(__dirname, "libquery_engine-rhel-openssl-3.0.x.so.node");
+    path.join(process.cwd(), "src/generated/client/libquery_engine-rhel-openssl-3.0.x.so.node");
     path.join(__dirname, "schema.prisma");
     path.join(process.cwd(), "src/generated/client/schema.prisma");
   }
@@ -9798,12 +9804,12 @@ var z = /* @__PURE__ */ Object.freeze({
 
 // ../../packages/common/src/types.ts
 var CreateUserSchema = z.object({
-  email: z.string().min(3).max(20),
+  email: z.string().min(3).max(100),
   password: z.string(),
   name: z.string()
 });
 var SigninSchema = z.object({
-  username: z.string().min(3).max(20),
+  username: z.string().min(3).max(100),
   password: z.string()
 });
 var CreateRoomSchema = z.object({
