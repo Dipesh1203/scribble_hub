@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 const allowedOrigins = [
   'http://localhost:3000', // standard next.js port
   'http://localhost:3003', // The port your log shows you are using
-  process.env.FRONTEND_URL || 'http://localhost:3000', // Allow environment variable or default to localhost
+  process.env.FRONTEND_URL , // Allow environment variable or default to localhost
 ];
 
 const app = express();
@@ -25,4 +25,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(router);
-app.listen(3000);
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`[Local Server] Running smoothly on port ${PORT}`);
+  });
+}
