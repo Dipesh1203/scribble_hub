@@ -95,5 +95,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  secret: JWT_SECRET || "Dipesh",
+  secret: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || JWT_SECRET || "Dipesh",
 };

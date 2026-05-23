@@ -7,7 +7,7 @@ export { default } from "next-auth/middleware";
 export async function middleware(request: NextRequest) {
   const token = await getToken({
     req: request,
-    secret: process.env.JWT_SECRET || "Dipesh"
+    secret: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "Dipesh"
   });
   const { pathname } = request.nextUrl;
 
