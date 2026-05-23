@@ -15,7 +15,7 @@ import { CircleShape } from "@/components/konva-shapes/CircleShape";
 import { ScribbleDraw } from "@/components/konva-shapes/ScribbleDraw";
 import { TextShape } from "@/components/konva-shapes/TextShape";
 
-import { process.env.NEXT_PUBLIC_API_URL, WS_URL } from "@repo/common/server";
+import { WS_URL } from "@repo/common/server";
 import { DefaultSession } from "next-auth";
 import axios from "axios";
 import Link from "next/link";
