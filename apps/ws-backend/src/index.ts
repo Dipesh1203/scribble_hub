@@ -3,7 +3,8 @@ import { WebSocket, WebSocketServer } from "ws";
 import { prismaClient } from "@repo/db/client";
 import { JWT_SECRET } from "@repo/common/server";
 
-const wss = new WebSocketServer({ port: 3002 });
+const port = process.env.PORT ? Number(process.env.PORT) : 3002;
+const wss = new WebSocketServer({ port });
 
 interface User {
   ws: WebSocket;
