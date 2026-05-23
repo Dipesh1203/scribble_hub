@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "pnpm --filter=@repo/db build && npx esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=api/index.js --external:express --external:cors --external:bcrypt --external:jsonwebtoken --external:@prisma/client",
+    "build": "pnpm --filter=@repo/db build && npx esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=api/index.js --external:express --external:cors --external:bcrypt --external:jsonwebtoken --external:@prisma/client && node -e \"const fs = require('fs'); fs.readdirSync('../../packages/db/src/generated/client').filter(f => f.endsWith('.node')).forEach(f => { try { fs.copyFileSync('../../packages/db/src/generated/client/' + f, './' + f); } catch (e) { console.warn('Could not copy', f, e.message); } })\"",
     "start": "node api/index.js",
     "dev": "npm run build && npm run start"
   },

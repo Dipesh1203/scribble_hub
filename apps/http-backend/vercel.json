@@ -5,7 +5,7 @@
   ],
   "functions": {
     "api/index.js": {
-      "includeFiles": "../../packages/db/src/generated/client/*.node"
+      "includeFiles": "*.node"
     }
   }
 }
