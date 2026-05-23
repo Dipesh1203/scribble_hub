@@ -6,9 +6,6 @@
   "functions": {
     "api/index.ts": {
       "includeFiles": "../../packages/db/src/generated/client/*.node"
-    },
-    "api/index.js": {
-      "includeFiles": "../../packages/db/src/generated/client/*.node"
     }
   }
 }
