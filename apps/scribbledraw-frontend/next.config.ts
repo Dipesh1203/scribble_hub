@@ -22,13 +22,13 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_BACKEND_URL:
-      BACKEND_URL || process.env.BACKEND_URL || "http://localhost:3000",
-    NEXT_PUBLIC_WS_URL: WS_URL || process.env.WS_URL || "ws://localhost:3002",
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3002",
     NEXTAUTH_URL:
-      FRONTEND_URL || process.env.FRONTEND_URL || "http://localhost:3003",
-    NEXTAUTH_SECRET: JWT_SECRET || "Dipesh",
-    NEXT_PUBLIC_LLM_URL: LLM_URL || "",
-    NEXT_PUBLIC_LLM_TOKEN: LLM_TOKEN || "",
+      process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3003",
+    NEXTAUTH_SECRET: process.env.NEXT_PUBLIC_JWT_SECRET || "Dipesh",
+    NEXT_PUBLIC_LLM_URL: process.env.NEXT_PUBLIC_LLM_URL || "",
+    NEXT_PUBLIC_LLM_TOKEN: process.env.NEXT_PUBLIC_LLM_TOKEN || "",
   },
 };
 
