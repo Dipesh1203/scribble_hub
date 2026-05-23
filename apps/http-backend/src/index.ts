@@ -5,9 +5,11 @@ import bcrypt from "bcrypt";
 
 const allowedOrigins = [
   'http://localhost:3000', // standard next.js port
-  'http://localhost:3003', // The port your log shows you are using
-  process.env.FRONTEND_URL , // Allow environment variable or default to localhost
-];
+  'http://localhost:3003', // standard next.js port
+  'https://scribbledraw-frontend.vercel.app', // Your production frontend origin
+  process.env.FRONTEND_URL?.replace(/['";\s]/g, ''), // Clean trailing semicolons, spaces, or quotes
+  process.env.NEXT_PUBLIC_FRONTEND_URL?.replace(/['";\s]/g, ''),
+].filter(Boolean) as string[];
 
 const app: express.Application = express();
 app.use(express.json());
@@ -17,7 +19,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Blocked by CORS policy'));
+      callback(null, false); // Do not throw an error; let CORS middleware handle it by omitting headers
     }
   },
   credentials: true, // Allow tokens/cookies if needed
