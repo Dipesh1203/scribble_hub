@@ -1,9 +1,9 @@
-import { BACKEND_URL } from "@repo/common/server";
+// import { process.env.NEXT_PUBLIC_API_URL} from "@repo/common/server";
 import axios from "axios";
 
 export const getUserRooms = async (token: string) => {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/rooms`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -29,7 +29,7 @@ export const updateUser = async (
 ) => {
   try {
     const res = await axios.put(
-      `${BACKEND_URL}/api/user`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/user`,
       { name: nameToSend, email: emailToSend, photo: photoToSend },
       { headers: { Authorization: `Bearer ${token}` } }
     );

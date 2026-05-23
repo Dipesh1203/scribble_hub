@@ -22,7 +22,7 @@ import {
   ClipboardIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { BACKEND_URL } from "@repo/common/server";
+// import { process.env.NEXT_PUBLIC_API_URL} from "@repo/common/server";
 import { useSession } from "next-auth/react";
 import { Session } from "../api/auth/[...nextauth]/options";
 import axios from "axios";

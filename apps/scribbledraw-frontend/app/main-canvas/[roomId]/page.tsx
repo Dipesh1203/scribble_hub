@@ -15,7 +15,7 @@ import { CircleShape } from "@/components/konva-shapes/CircleShape";
 import { ScribbleDraw } from "@/components/konva-shapes/ScribbleDraw";
 import { TextShape } from "@/components/konva-shapes/TextShape";
 
-import { BACKEND_URL, WS_URL } from "@repo/common/server";
+import { process.env.NEXT_PUBLIC_API_URL, WS_URL } from "@repo/common/server";
 import { DefaultSession } from "next-auth";
 import axios from "axios";
 import Link from "next/link";
@@ -546,7 +546,7 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
   };
 
   const getExistingShapes = async (roomId: string) => {
-    const res = await axios.get(`${BACKEND_URL}/api/chats/${roomId}`);
+    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/chats/${roomId}`);
     console.log("getExistingShapes", res);
     const data = res.data.messages;
     console.log("response", res);

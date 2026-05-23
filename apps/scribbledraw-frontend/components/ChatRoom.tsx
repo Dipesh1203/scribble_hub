@@ -3,7 +3,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { ChatRoomClient } from "./ChatRoomClient";
-import { BACKEND_URL } from "@repo/common/server";
+// // import { process.env.NEXT_PUBLIC_API_URL} from "@repo/common/server";
+
 
 const ChatRoom = ({ id }: { id: string }) => {
   const [messages, setMessages] = useState<string[]>([]);
@@ -12,7 +13,7 @@ const ChatRoom = ({ id }: { id: string }) => {
   useEffect(() => {
     async function fetchChats() {
       try {
-        const response = await axios.get(`${BACKEND_URL}/api/chats/${id}`);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/chats/${id}`);
         setMessages(response.data.messages);
       } catch (error) {
         console.error("Error fetching chats:", error);

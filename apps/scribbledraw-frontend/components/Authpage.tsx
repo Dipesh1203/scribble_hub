@@ -28,7 +28,7 @@ import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { BACKEND_URL } from "@repo/common/server";
+// // import { process.env.NEXT_PUBLIC_API_URL} from "@repo/common/server";
 import { signIn } from "next-auth/react";
 
 export function AuthPage({ isSignin }: { isSignin: boolean }) {
@@ -55,7 +55,7 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
           setTimeout(() => router.push("/room"), 800);
         }
       } else {
-        const response = await axios.post(`${BACKEND_URL}/api/signup`, {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/signup`, {
           name,
           email,
           password,

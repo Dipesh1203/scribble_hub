@@ -1,4 +1,4 @@
-import { BACKEND_URL } from "@repo/common/server";
+// import { process.env.NEXT_PUBLIC_API_URL} from "@repo/common/server";
 import axios from "axios";
 
 type Shape =
@@ -111,7 +111,7 @@ function clearCanvas(
 }
 
 async function getExistingShapes(roomId: string) {
-  const res = await axios.get(`${BACKEND_URL}/api/chats/${roomId}`);
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/chats/${roomId}`);
 
   const data = res.data.messages;
   const shapes = data

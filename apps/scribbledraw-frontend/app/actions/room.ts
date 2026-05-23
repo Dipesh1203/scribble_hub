@@ -1,10 +1,10 @@
-import { BACKEND_URL } from "@repo/common/server";
+// import { process.env.NEXT_PUBLIC_API_URL} from "@repo/common/server";
 import axios from "axios";
 
 export const getRoomid = async (token: string | undefined) => {
   try {
     const res = await axios.post(
-      `${BACKEND_URL}/api/room`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/room`,
       {},
       {
         headers: {
@@ -23,7 +23,7 @@ export const getRoomidFromSlug = async (
   token: string | undefined
 ) => {
   try {
-    const res = await axios.get(`${BACKEND_URL}/api/room/${slug}`, {
+    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/room/${slug}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -5,7 +5,7 @@ import {
   SigninSchema,
   CreateRoomSchema,
 } from "@repo/common/types";
-import { BACKEND_URL, JWT_SECRET } from "@repo/common/server";
+import {  JWT_SECRET } from "@repo/common/server";
 
 interface userType {
   id: string;
@@ -41,7 +41,7 @@ export const authOptions: NextAuthOptions = {
         credentials: { username: string; password: string } | undefined
       ): Promise<any> {
         try {
-          const res = await fetch(`${BACKEND_URL}/api/signin`, {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/signin`, {
             method: "POST",
             body: JSON.stringify(credentials),
             headers: { "Content-Type": "application/json" },
