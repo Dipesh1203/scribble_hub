@@ -10,6 +10,10 @@ import { middleware } from "./middleware";
 
 const router: Router = express.Router();
 
+router.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "OK", message: "Server is healthy" });
+});
+
 router.post("/api/signup", signup);
 router.post("/api/signin", signin);
 router.put("/api/user", middleware, updateProfile);
