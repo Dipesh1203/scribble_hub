@@ -21,7 +21,8 @@
   "devDependencies": {
     "@repo/common": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/express": "^5.0.0"
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.11.0"
   },
   "keywords": [],
   "author": "",

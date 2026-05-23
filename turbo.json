@@ -1,5 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "DATABASE_URL",
+    "MONGO_URI",
+    "NODE_ENV",
+    "FRONTEND_URL",
+    "JWT_SECRET"
+  ],
   "ui": "tui",
   "tasks": {
     "build": {
