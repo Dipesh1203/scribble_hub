@@ -9,7 +9,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL , // Allow environment variable or default to localhost
 ];
 
-const app = express();
+const app: express.Application = express();
 app.use(express.json());
 app.use(cors({
   origin: (origin, callback) => {
@@ -31,3 +31,5 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`[Local Server] Running smoothly on port ${PORT}`);
   });
 }
+
+export default app;
