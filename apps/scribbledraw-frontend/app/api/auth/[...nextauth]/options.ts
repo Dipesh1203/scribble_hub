@@ -34,11 +34,11 @@ export const authOptions: NextAuthOptions = {
       name: "Credentials",
 
       credentials: {
-        username: { label: "Email", type: "email", placeholder: "Email" },
+        email: { label: "Email", type: "email", placeholder: "Email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(
-        credentials: { username: string; password: string } | undefined
+        credentials: { email: string; password: string } | undefined
       ): Promise<any> {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/signin`, {
@@ -95,5 +95,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXT_PUBLIC_JWT_SECRET || process.env.JWT_SECRET || JWT_SECRET || "Dipesh",
+  secret: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || JWT_SECRET || "Dipesh",
 };
