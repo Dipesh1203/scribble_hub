@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
   if (token && pathname === "/signin") {
     return NextResponse.redirect(new URL("/room", request.url));
   }
+  console.log("Middleware executed. Token:", token, "Pathname:", pathname);
 
   if (!token && pathname.startsWith("/room")) {
     return NextResponse.redirect(new URL("/signin", request.url));
@@ -26,5 +27,5 @@ export async function middleware(request: NextRequest) {
 
 // Configuring middleware to apply only to specific routes
 export const config = {
-  matcher: ["/dashboard", "/signin", "/room", "/signup"], // List out the exact routes to protect
+  matcher: ["/dashboard", "/signin", "/room/:path*", "/signup", "/canvas/:path*", "/main-canvas/:path*", "/draw/:path*"], // Protect all auth-related and dynamic routes
 };
