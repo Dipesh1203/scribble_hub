@@ -19,9 +19,14 @@ export async function middleware(request: NextRequest) {
   const cookieValue = request.cookies.get("next-auth.session-token")?.value || request.cookies.get("__Secure-next-auth.session-token")?.value;
   console.log("DEBUG - Cookie exists:", cookieValue ? "✓ Yes" : "✗ No");
   console.log("Secrect ",secret)
+  
+  const hasSecureCookie = request.cookies.has("__Secure-next-auth.session-token");
+  const secureCookie = request.nextUrl.protocol === "https:" || hasSecureCookie;
+
   const token = await getToken({
     req: request,
-    secret: secret
+    secret: secret,
+    secureCookie: secureCookie
   });
   const { pathname } = request.nextUrl;
 
