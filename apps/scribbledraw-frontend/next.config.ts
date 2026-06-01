@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3002",
     NEXTAUTH_URL:
       process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3003",
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || JWT_SECRET,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET ,
     NEXT_PUBLIC_LLM_URL: process.env.NEXT_PUBLIC_LLM_URL || "",
     NEXT_PUBLIC_LLM_TOKEN: process.env.NEXT_PUBLIC_LLM_TOKEN || "",
   },
