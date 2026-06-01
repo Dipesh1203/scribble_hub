@@ -1,5 +1,5 @@
 "use client";
-import { WS_URL } from "@repo/common/server";
+// import { WS_URL } from "@repo/common/server";
 import { useEffect, useState } from "react";
 import { Session } from "next-auth";
 
@@ -17,7 +17,7 @@ export const useWebSocket = ({
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(`${WS_URL}?token=${session?.token}`);
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?token=${session?.token}`);
 
     ws.onmessage = (event) => {
       try {

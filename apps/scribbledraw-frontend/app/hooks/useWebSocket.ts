@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { WS_URL } from "@repo/common/server";
+// import { WS_URL } from "@repo/common/server";
 import { Session } from "../main-canvas/[roomId]/page";
 
 interface UseWebSocketProps {
@@ -18,7 +18,7 @@ export const useWebSocket = ({
   useEffect(() => {
     if (!session?.token) return;
 
-    const ws = new WebSocket(`${WS_URL}?token=${session.token}`);
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?token=${session.token}`);
 
     ws.onmessage = (event) => {
       try {

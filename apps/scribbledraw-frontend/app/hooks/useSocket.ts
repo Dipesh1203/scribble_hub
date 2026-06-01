@@ -1,4 +1,4 @@
-import { WS_URL } from "@repo/common/server";
+// import { WS_URL } from "@repo/common/server";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Session } from "../api/auth/[...nextauth]/options";
@@ -10,7 +10,7 @@ export function useSocket() {
   const session = data as Session;
   useEffect(() => {
     if (!session?.token) return;
-    const ws = new WebSocket(`${WS_URL}?token=${session?.token}`);
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?token=${session?.token}`);
     ws.onopen = () => {
       setLoading(false);
       setSocket(ws);

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Canvas } from "./Canvas";
 import { useSession } from "next-auth/react";
-import { WS_URL } from "@repo/common/server";
+// import { WS_URL } from "@repo/common/server";
 import { DefaultSession } from "next-auth";
 
 export interface Session extends DefaultSession {
@@ -20,7 +20,7 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
   const session = data as Session;
   useEffect(() => {
     const ws = new WebSocket(
-      `${WS_URL}?token=${(session && session?.token) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiOTY3YWZmNy0yNTY4LTQ5OTUtYjQ1Ny1kNTFiODQwYjlhMWQiLCJpYXQiOjE3NDI0MTA1OTZ9.MCxZ34-iMznxnfZC8c4uSqRM5FmJYMXOYcvuLVaWKcU"}`
+      `${process.env.NEXT_PUBLIC_WS_URL}?token=${(session && session?.token) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiOTY3YWZmNy0yNTY4LTQ5OTUtYjQ1Ny1kNTFiODQwYjlhMWQiLCJpYXQiOjE3NDI0MTA1OTZ9.MCxZ34-iMznxnfZC8c4uSqRM5FmJYMXOYcvuLVaWKcU"}`
     );
 
     ws.onopen = () => {

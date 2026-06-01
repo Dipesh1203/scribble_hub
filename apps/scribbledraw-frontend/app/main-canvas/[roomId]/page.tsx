@@ -15,7 +15,7 @@ import { CircleShape } from "@/components/konva-shapes/CircleShape";
 import { ScribbleDraw } from "@/components/konva-shapes/ScribbleDraw";
 import { TextShape } from "@/components/konva-shapes/TextShape";
 
-import { WS_URL } from "@repo/common/server";
+// import { WS_URL } from "@repo/common/server";
 import { DefaultSession } from "next-auth";
 import axios from "axios";
 import Link from "next/link";
@@ -117,7 +117,7 @@ export default function MainCanvas({ params }: { params: Promise<{ roomId: strin
 
   useEffect(() => {
     const ws = new WebSocket(
-      `${WS_URL}?token=${(session && session?.token)}`
+      `${process.env.NEXT_PUBLIC_WS_URL}?token=${(session && session?.token)}`
     );
     console.log("ws", ws);
     console.log("roomId", roomId);
