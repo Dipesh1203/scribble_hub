@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { JWT_SECRET } from "@repo/common/server";
 export { default } from "next-auth/middleware";
 
 // Middleware to handle authentication and route redirection
 export async function middleware(request: NextRequest) {
+  const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || JWT_SECRET;
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "Dipesh"
+    secret: secret
   });
   const { pathname } = request.nextUrl;
 
