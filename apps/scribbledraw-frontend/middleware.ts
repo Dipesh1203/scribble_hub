@@ -7,6 +7,17 @@ export { default } from "next-auth/middleware";
 // Middleware to handle authentication and route redirection
 export async function middleware(request: NextRequest) {
   const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || JWT_SECRET;
+  
+  // Debug logging
+  const cookieValue = request.cookies.get("next-auth.session-token")?.value || request.cookies.get("__Secure-next-auth.session-token")?.value;
+  console.log("DEBUG - Secret configured:", secret ? "✓ Set" : "✗ Missing");
+  console.log("DEBUG - Cookie exists:", cookieValue ? "✓ Yes" : "✗ No");
+  console.log("DEBUG - Env vars:", {
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? "✓" : "✗",
+    JWT_SECRET: process.env.JWT_SECRET ? "✓" : "✗",
+    NODE_ENV: process.env.NODE_ENV,
+  });
+  
   const token = await getToken({
     req: request,
     secret: secret
