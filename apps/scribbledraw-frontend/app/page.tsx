@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 export default function ScribbleDrawLandingProfessional() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
-  console.log(process.env.NEXT_PUBLIC_JWT_SECRET);
 
   const features = [
     {
